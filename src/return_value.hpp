@@ -35,6 +35,7 @@ enum status_t {
 };
 }  // namespace status
 
+namespace {
 /// @brief Get the value part of a function result.
 /// @param result The function result.
 /// @returns the return value of the function result.
@@ -65,6 +66,7 @@ template <typename T>
 bool is_success(const std::pair<T, status::status_t>& result) {
   return is_success(result.second);
 }
+}  // namespace
 
 }  // namespace us3
 

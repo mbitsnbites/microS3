@@ -24,11 +24,13 @@
 #include <string>
 
 namespace us3 {
+
+/// @brief Different parts of an URL.
 struct url_parts_t {
-  std::string scheme;
-  std::string host;
-  std::string path;
-  int port;
+  std::string scheme;  ///< Scheme (e.g. "http" or "https").
+  std::string host;    ///< Host name (e.g. "myhost" or "192.168.0.1").
+  std::string path;    ///< Path including leading slash (e.g. "/path/to/object").
+  int port;            ///< Port number (e.g. 80).
 };
 
 /// @brief Parse the given URL.

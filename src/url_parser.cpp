@@ -53,12 +53,12 @@ std::pair<url_parts_t, status::status_t> parse_url(const char* url) {
   }
   const bool has_port = (url[k] == ':');
   parts.host = std::string(&url[part_start], k - part_start);
-  part_start = k + 1;
+  part_start = k + (has_port ? 1 : 0);
 
   // Extract the port.
   if (has_port) {
     for (k = part_start; (url[k] != 0) && (url[k] != '/'); ++k);
-    if (url[k] == '/') {
+    if (url[k] != '/') {
       return std::make_pair(parts, status::INVALID_URL);
     }
     char* int_end;
@@ -66,13 +66,13 @@ std::pair<url_parts_t, status::status_t> parse_url(const char* url) {
     if ((parts.port == 0) || (int_end != &url[k])) {
       return std::make_pair(parts, status::INVALID_URL);
     }
-    part_start = k + 1;
+    part_start = k;
   } else {
     // Default to a port based on the scheme.
     parts.port = (parts.scheme == "https" ? 443 : 80);
   }
 
-  // The rest is the path (we include query & fragment in the path.
+  // The rest is the path (we include query & fragment in the path).
   parts.path = std::string(&url[part_start]);
 
   return std::make_pair(parts, status::SUCCESS);

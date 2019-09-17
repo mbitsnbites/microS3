@@ -17,42 +17,18 @@
 #  3. This notice may not be removed or altered from any source distribution.
 ###################################################################################################
 
-cmake_minimum_required(VERSION 3.5)
-project(microS3)
-
-enable_testing()
-
-# We build everything against the C++03 standard (since CMake does not support 3 as a standard, we
-# use 98 which is close enough and for most purposes identical).
-set(CMAKE_CXX_STANDARD 98)
+# Tests use C++11.
+set(CMAKE_CXX_STANDARD 11)
 set(CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# The us3 library.
-add_library(
-        us3
-        src/capi.cpp
-        src/connection.cpp
-        src/connection.hpp
-        src/return_value.hpp
-        src/url_parser.cpp
-        src/url_parser.hpp
-        )
-target_include_directories(us3 PUBLIC include)
+# We use doctest for tests.
+# See: https://github.com/onqtam/doctest/
+add_library(doctest
+            doctest/doctest_main.cpp
+            doctest/doctest.h)
+target_include_directories(doctest PUBLIC doctest)
 
-# Tests.
-add_subdirectory(test)
-
-# API documentation.
-find_package(Doxygen)
-if(DOXYGEN_FOUND AND NOT (${CMAKE_VERSION} VERSION_LESS "3.9.0"))
-  set(DOXYGEN_PROJECT_NAME microS3)
-  set(DOXYGEN_OUTPUT_DIRECTORY apidoc)
-  set(DOXYGEN_GENERATE_HTML YES)
-  set(DOXYGEN_OPTIMIZE_FOR_C YES)
-  set(DOXYGEN_QUIET YES)
-  set(DOXYGEN_WARN_IF_UNDOCUMENTED NO)
-  doxygen_add_docs(apidoc
-                   include
-                   COMMENT "Generating API documentation with Doxygen")
-endif()
+# Unit tests.
+include(us3_add_test.cmake)
+us3_add_test(url_parser_test.cpp)
