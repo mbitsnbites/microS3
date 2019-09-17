@@ -31,4 +31,5 @@ target_include_directories(doctest PUBLIC doctest)
 
 # Unit tests.
 include(us3_add_test.cmake)
+us3_add_test(sha1_hmac_test.cpp)
 us3_add_test(url_parser_test.cpp)
