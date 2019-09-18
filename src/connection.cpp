@@ -19,6 +19,7 @@
 
 #include "connection.hpp"
 #include "sha1_hmac.hpp"
+#include <clocale>
 #include <ctime>
 
 namespace us3 {

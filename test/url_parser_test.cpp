@@ -21,6 +21,10 @@
 #include <return_value.hpp>
 #include <url_parser.hpp>
 
+// Workaround for macOS build errors.
+// See: https://github.com/onqtam/doctest/issues/126
+#include <iostream>
+
 TEST_CASE("Parse valid URL strings") {
   SUBCASE("Simple HTTP URL") {
     // GIVEN

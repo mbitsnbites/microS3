@@ -22,6 +22,10 @@
 #include <sha1_hmac.hpp>
 #include <string>
 
+// Workaround for macOS build errors.
+// See: https://github.com/onqtam/doctest/issues/126
+#include <iostream>
+
 TEST_CASE("Hash some strings") {
   SUBCASE("Hello world") {
     // GIVEN
