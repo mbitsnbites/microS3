@@ -18,6 +18,7 @@
 //--------------------------------------------------------------------------------------------------
 
 #include "connection.hpp"
+#include "network_socket.hpp"
 #include "return_value.hpp"
 #include "url_parser.hpp"
 #include <cstring>
@@ -104,7 +105,7 @@ US3_EXTERN us3_status_t us3_open(const char* host_name,
                                   access_key,
                                   secret_key,
                                   to_connection_mode(mode),
-                                  static_cast<us3::connection_t::timeout_t>(timeout));
+                                  static_cast<us3::net::timeout_t>(timeout));
   if (!us3::is_success(result)) {
     delete new_handle;
     return to_capi_status(result);
@@ -178,7 +179,7 @@ US3_EXTERN us3_status_t us3_read(us3_handle_t handle,
   }
 
   return to_capi_status(handle->connection.read(
-      buf, count, static_cast<us3::connection_t::timeout_t>(timeout), *actual_count));
+      buf, count, static_cast<us3::net::timeout_t>(timeout), *actual_count));
 }
 
 US3_EXTERN us3_status_t us3_write(us3_handle_t handle,
@@ -198,5 +199,5 @@ US3_EXTERN us3_status_t us3_write(us3_handle_t handle,
   }
 
   return to_capi_status(handle->connection.write(
-      buf, count, static_cast<us3::connection_t::timeout_t>(timeout), *actual_count));
+      buf, count, static_cast<us3::net::timeout_t>(timeout), *actual_count));
 }

@@ -20,6 +20,7 @@
 #ifndef US3_CONNECTION_HPP_
 #define US3_CONNECTION_HPP_
 
+#include "network_socket.hpp"
 #include "return_value.hpp"
 #include <string>
 
@@ -33,9 +34,6 @@ public:
     READ = 1,  ///< The stream is open in read mode.
     WRITE = 2  ///< The stream is open in write mode.
   };
-
-  /// @brief Timeout in microseconds.
-  typedef long timeout_t;
 
   connection_t() : m_mode(NONE) {
   }
@@ -52,15 +50,15 @@ public:
                         const char* access_key,
                         const char* secret_key,
                         const mode_t mode,
-                        const timeout_t timeout);
+                        const net::timeout_t timeout);
   status::status_t close();
   status::status_t read(void* buf,
                         const size_t count,
-                        const timeout_t timeout,
+                        const net::timeout_t timeout,
                         size_t& actual_count);
   status::status_t write(const void* buf,
                          const size_t count,
-                         const timeout_t timeout,
+                         const net::timeout_t timeout,
                          size_t& actual_count);
 
 private:

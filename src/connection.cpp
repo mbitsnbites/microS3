@@ -62,8 +62,8 @@ status::status_t connection_t::open(const char* host_name,
                                     const char* path,
                                     const char* access_key,
                                     const char* secret_key,
-                                    const connection_t::mode_t mode,
-                                    const connection_t::timeout_t timeout) {
+                                    const mode_t mode,
+                                    const net::timeout_t timeout) {
   // Sanity check arguments.
   // Note: All pointers are guaranteed to be non-NULL at this point.
   if (port < 1 || port > 65535) {
@@ -120,7 +120,7 @@ status::status_t connection_t::close() {
 
 status::status_t connection_t::read(void* buf,
                                     const size_t count,
-                                    const connection_t::timeout_t timeout,
+                                    const net::timeout_t timeout,
                                     size_t& actual_count) {
   // The connection must have been opened in read mode.
   if (m_mode != READ) {
@@ -133,7 +133,7 @@ status::status_t connection_t::read(void* buf,
 
 status::status_t connection_t::write(const void* buf,
                                      const size_t count,
-                                     const connection_t::timeout_t timeout,
+                                     const net::timeout_t timeout,
                                      size_t& actual_count) {
   // The connection must have been opened in write mode.
   if (m_mode != WRITE) {
