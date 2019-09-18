@@ -30,40 +30,35 @@ public:
   // The raw SHA1 HMAC digest size is 20 bytes.
   static const int SHA1_HMAC_RAW_SIZE = 20;
 
-  // The base64-encoded SHA1 HMAC digest size is 28 bytes (excluding the zero termination).
-  static const int SHA1_HMAC_BASE64_SIZE = 28;
-
   /// @brief Construct a base64 encoded digest from a raw digest.
-  sha1_hmac_t(const unsigned char* raw_digest) {
+  /// @param raw_digest The raw digest buffer.
+  /// @note This implementation is hardcoded for converting 20 raw bytes to 28 base64 chars.
+  sha1_hmac_t(const unsigned char (&raw_digest)[20]) {
     static const char* const BASE64_CHARS =
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-    for (int i = 0, j = 0; i < SHA1_HMAC_RAW_SIZE; i += 3, j += 4) {
-      // Collect three bytes (24 bits) from the input buffer.
-      unsigned long v = static_cast<unsigned long>(raw_digest[i]) << 16;
-      if (i + 1 < SHA1_HMAC_RAW_SIZE) {
-        v = v | (static_cast<unsigned long>(raw_digest[i + 1]) << 8);
-      }
-      if (i + 2 < SHA1_HMAC_RAW_SIZE) {
-        v = v | static_cast<unsigned long>(raw_digest[i + 2]);
-      }
 
-      // Produce four bytes for the output buffer.
-      m_digest[j] = BASE64_CHARS[(v >> 18) & 0x3F];
-      m_digest[j + 1] = BASE64_CHARS[(v >> 12) & 0x3F];
-      if (i + 1 < SHA1_HMAC_RAW_SIZE) {
-        m_digest[j + 2] = BASE64_CHARS[(v >> 6) & 0x3F];
-      } else {
-        m_digest[j + 2] = '=';
-      }
-      if (i + 2 < SHA1_HMAC_RAW_SIZE) {
-        m_digest[j + 3] = BASE64_CHARS[v & 0x3F];
-      } else {
-        m_digest[j + 3] = '=';
+    // Loop over all input bytes and emit encoded bytes.
+    unsigned long v = 0;
+    int i = 0, j = 0;
+    for (; i < 20; ++i) {
+      v = (v << 8) | static_cast<unsigned long>(raw_digest[i]);
+
+      // Emit four encoded chars for every three input bytes.
+      if ((i % 3) == 2) {
+        m_digest[j++] = BASE64_CHARS[(v >> 18) & 0x3F];
+        m_digest[j++] = BASE64_CHARS[(v >> 12) & 0x3F];
+        m_digest[j++] = BASE64_CHARS[(v >> 6) & 0x3F];
+        m_digest[j++] = BASE64_CHARS[v & 0x3F];
+        v = 0;
       }
     }
 
-    // Zero-terminate.
-    m_digest[SHA1_HMAC_BASE64_SIZE] = '\0';
+    // Since 20/3 = 6+2/3, we have two source bytes left (emit as three encoded chars).
+    m_digest[j++] = BASE64_CHARS[(v >> 10) & 0x3F];
+    m_digest[j++] = BASE64_CHARS[(v >> 4) & 0x3F];
+    m_digest[j++] = BASE64_CHARS[(v << 2) & 0x3F];
+    m_digest[j++] = '=';
+    m_digest[j++] = '\0';
   }
 
   /// @brief Get the base64 encoded digest as a C string.
@@ -72,6 +67,9 @@ public:
   }
 
 private:
+  // The base64-encoded SHA1 HMAC digest size is 28 bytes (excluding the zero termination).
+  static const int SHA1_HMAC_BASE64_SIZE = 28;
+
   char m_digest[SHA1_HMAC_BASE64_SIZE + 1];
 };
 

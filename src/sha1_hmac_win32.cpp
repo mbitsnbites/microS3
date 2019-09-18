@@ -104,7 +104,7 @@ std::pair<sha1_hmac_t, status::status_t> sha1_hmac(const char* key, const char* 
   }
   CryptReleaseContext(crypt_prov, 0);
 
-  return std::make_pair(sha1_hmac_t(&raw_digest[0]), return_status);
+  return std::make_pair(sha1_hmac_t(raw_digest), return_status);
 }
 
 }  // namespace us3
