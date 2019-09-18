@@ -46,6 +46,10 @@
  * @li us3_close() - Close an S3 stream.
  * @li us3_read() - Read data from an S3 stream.
  * @li us3_write() - Write data to an S3 stream.
+ *
+ * @section types_sec About API types
+ *
+ * All strings are interpreted as UTF-8 encoded, zero-terminated char strings.
  */
 
 /** @brief Return value for μS3 functions. */
