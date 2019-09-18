@@ -25,7 +25,7 @@ namespace us3 {
 
 std::pair<sha1_hmac_t, status::status_t> sha1_hmac(const char* key, const char* data) {
   unsigned char raw_digest[sha1_hmac_t::SHA1_HMAC_RAW_SIZE];
-  CCHmac(kCCHmacAlgSHA1, key, std::strlen(key), data, std::strlen(data), &raw_digest[0]);
+  ::CCHmac(kCCHmacAlgSHA1, key, std::strlen(key), data, std::strlen(data), &raw_digest[0]);
   return std::make_pair(sha1_hmac_t(&raw_digest[0]), status::SUCCESS);
 }
 
