@@ -38,8 +38,9 @@ set(US3_SOURCES
   src/url_parser.cpp
   src/url_parser.hpp
   )
-set(US3_LIBS)
 
+# Platform support.
+set(US3_LIBS)
 if(WIN32 OR MINGW)
   list(APPEND US3_SOURCES
     src/sha1_hmac_win32.cpp)

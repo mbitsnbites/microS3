@@ -18,8 +18,44 @@
 //--------------------------------------------------------------------------------------------------
 
 #include "connection.hpp"
+#include "sha1_hmac.hpp"
+#include <ctime>
 
 namespace us3 {
+
+namespace {
+std::string get_date_rfc2616_gmt() {
+  // TODO(m): setlocale() is not guaranteed to be thread safe. Can we do this in a more thread safe
+  // manner?
+
+  // Set the locale to "C" (and save old locale).
+  const char* old_locale_ptr = setlocale(LC_ALL, NULL);
+  setlocale(LC_ALL, "C");
+
+  // Get the current date & time.
+  time_t now = time(0);
+  struct tm tm = *gmtime(&now);
+
+  // Format the date & time according to RFC2616.
+  char buf[100];
+  if (strftime(buf, sizeof(buf), "%a, %d %b %Y %H:%M:%S GMT", &tm) == 0) {
+    buf[0] = '\0';
+  }
+
+  // Restore the old locale.
+  setlocale(LC_ALL, old_locale_ptr);
+
+  return std::string(&buf[0]);
+}
+
+std::string mode_to_http_method(const connection_t::mode_t mode) {
+  if (mode == connection_t::WRITE) {
+    return "PUT";
+  } else {
+    return "GET";
+  }
+}
+}  // namespace
 
 status::status_t connection_t::open(const char* host_name,
                                     const int port,
@@ -39,6 +75,35 @@ status::status_t connection_t::open(const char* host_name,
     return status::INVALID_OPERATION;
   }
 
+  // Connect to the remote host.
+  // TODO(m): Implement me!
+
+  // Gather information for the HTTP request.
+  const std::string http_method = mode_to_http_method(mode);
+  const std::string content_type = "application/octet-stream";
+  const std::string date_formatted = get_date_rfc2616_gmt();
+  const std::string relative_path = std::string(path);
+
+  // Generate a signature based on the request info and the S3 secret key.
+  const std::string string_to_sign =
+      http_method + "\n\n" + content_type + "\n" + date_formatted + "\n" + relative_path;
+  const std::pair<sha1_hmac_t, status::status_t> digest =
+      sha1_hmac(secret_key, string_to_sign.c_str());
+  if (!is_success(digest)) {
+    return digest.second;
+  }
+  const std::string signature = std::string(value(digest).c_str());
+
+  // Construct the HTTP request header.
+  std::string http_header;
+  http_header += http_method + " " + std::string(path) + " HTTP/1.1";
+  http_header += "\r\nHost: " + std::string(host_name);
+  http_header += "\r\nContent-Type: " + content_type;
+  http_header += "\r\nDate: " + date_formatted;
+  http_header += "\r\nAuthorization: AWS " + std::string(access_key) + ":" + signature;
+  http_header += "\r\n\r\n";
+
+  // Send the HTTP header.
   // TODO(m): Implement me!
   return status::ERROR;
 }
