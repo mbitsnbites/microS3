@@ -79,10 +79,12 @@ typedef long us3_microseconds_t;
  * @brief Open an S3 stream.
  * @param host_name Name of the S3 host (can also be an IP address).
  * @param port The host port number.
- * @param path The object name (what comes after the host in an URL - no leading /).
+ * @param path The object name (what comes after the host in an URL - including the leading /).
+ * @param access_key The S3 access key.
+ * @param secret_key The S3 secret key.
  * @param mode Open mode.
  * @param timeout Connection timeout in microseconds, or US3_NO_TIMEOUT for no timeout.
- * @param[out] handle The resulting handle (must be != NULL).
+ * @param[out] handle The resulting handle.
  * @returns US3_SUCCESS on success, otherwise an error code.
  */
 US3_EXTERN us3_status_t us3_open(const char* host_name,
@@ -97,9 +99,11 @@ US3_EXTERN us3_status_t us3_open(const char* host_name,
 /**
  * @brief Open an S3 stream.
  * @param url Complete S3 URL.
+ * @param access_key The S3 access key.
+ * @param secret_key The S3 secret key.
  * @param mode Open mode.
  * @param timeout Connection timeout in microseconds, or US3_NO_TIMEOUT for no timeout.
- * @param[out] handle The resulting handle (must be != NULL).
+ * @param[out] handle The resulting handle.
  * @returns US3_SUCCESS on success, otherwise an error code.
  */
 US3_EXTERN us3_status_t us3_open_url(const char* url,
