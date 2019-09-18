@@ -22,6 +22,11 @@ set(CMAKE_CXX_STANDARD 11)
 set(CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+if(MINGW)
+  # For ease of deployment, statically link the standard libraries when using MinGW.
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libgcc -static-libstdc++")
+endif()
+
 # We use doctest for tests.
 # See: https://github.com/onqtam/doctest/
 add_library(doctest
