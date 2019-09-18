@@ -20,12 +20,13 @@
 #include <doctest.h>
 #include <return_value.hpp>
 #include <sha1_hmac.hpp>
+#include <string>
 
 TEST_CASE("Hash some strings") {
   SUBCASE("Hello world") {
     // GIVEN
-    const std::string key = "zupaS3cret!";
-    const std::string data = "Hello world!";
+    const char* key = "zupaS3cret!";
+    const char* data = "Hello world!";
 
     // WHEN
     const auto result = us3::sha1_hmac(key, data);
@@ -38,8 +39,8 @@ TEST_CASE("Hash some strings") {
 
   SUBCASE("Empty data") {
     // GIVEN
-    const std::string key = "abcdefghijklmnopqrstuvwxyz";
-    const std::string data = "";
+    const char* key = "abcdefghijklmnopqrstuvwxyz";
+    const char* data = "";
 
     // WHEN
     const auto result = us3::sha1_hmac(key, data);

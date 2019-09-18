@@ -21,7 +21,6 @@
 #define US3_SHA1_HMAC_HPP_
 
 #include "return_value.hpp"
-#include <string>
 
 namespace us3 {
 
@@ -38,7 +37,7 @@ public:
   sha1_hmac_t(const unsigned char* raw_digest) {
     static const char* const BASE64_CHARS =
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-    for (size_t i = 0, j = 0; i < SHA1_HMAC_RAW_SIZE; i += 3, j += 4) {
+    for (int i = 0, j = 0; i < SHA1_HMAC_RAW_SIZE; i += 3, j += 4) {
       // Collect three bytes (24 bits) from the input buffer.
       unsigned long v = static_cast<unsigned long>(raw_digest[i]) << 16;
       if (i + 1 < SHA1_HMAC_RAW_SIZE) {
@@ -80,7 +79,7 @@ private:
 /// @param key The secret key.
 /// @param data The data to hash.
 /// @returns the digest.
-std::pair<sha1_hmac_t, status::status_t> sha1_hmac(const std::string& key, const std::string& data);
+std::pair<sha1_hmac_t, status::status_t> sha1_hmac(const char* key, const char* data);
 
 }  // namespace us3
 

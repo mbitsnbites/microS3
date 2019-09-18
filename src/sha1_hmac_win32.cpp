@@ -32,8 +32,7 @@
 
 namespace us3 {
 
-std::pair<sha1_hmac_t, status::status_t> sha1_hmac(const std::string& key,
-                                                   const std::string& data) {
+std::pair<sha1_hmac_t, status::status_t> sha1_hmac(const char* key, const char* data) {
   unsigned char raw_digest[sha1_hmac_t::SHA1_HMAC_RAW_SIZE];
   status::status_t return_status = status::ERROR;
 
@@ -52,15 +51,16 @@ std::pair<sha1_hmac_t, status::status_t> sha1_hmac(const std::string& key,
       DWORD key_length;
     };
 
-    std::vector<BYTE> key_blob(sizeof(plain_text_key_blob_t) + key.size());
+    const size_t key_size = std::strlen(key);
+    std::vector<BYTE> key_blob(sizeof(plain_text_key_blob_t) + key_size);
     plain_text_key_blob_t* kb = reinterpret_cast<plain_text_key_blob_t*>(key_blob.data());
     std::memset(kb, 0, sizeof(plain_text_key_blob_t));
     kb->hdr.aiKeyAlg = CALG_RC2;
     kb->hdr.bType = PLAINTEXTKEYBLOB;
     kb->hdr.bVersion = CUR_BLOB_VERSION;
     kb->hdr.reserved = 0;
-    kb->key_length = static_cast<DWORD>(key.size());
-    std::memcpy(&key_blob[sizeof(plain_text_key_blob_t)], key.data(), key.size());
+    kb->key_length = static_cast<DWORD>(key_size);
+    std::memcpy(&key_blob[sizeof(plain_text_key_blob_t)], key, key_size);
     if (CryptImportKey(crypt_prov,
                        key_blob.data(),
                        static_cast<DWORD>(key_blob.size()),
@@ -74,8 +74,8 @@ std::pair<sha1_hmac_t, status::status_t> sha1_hmac(const std::string& key,
         if (CryptSetHashParam(
                 crypt_hash, HP_HMAC_INFO, reinterpret_cast<const BYTE*>(&hmac_info), 0)) {
           if (CryptHashData(crypt_hash,
-                            reinterpret_cast<const BYTE*>(data.data()),
-                            static_cast<DWORD>(data.size()),
+                            reinterpret_cast<const BYTE*>(data),
+                            static_cast<DWORD>(std::strlen(data)),
                             0)) {
             DWORD hash_len = 0;
             if (CryptGetHashParam(crypt_hash, HP_HASHVAL, 0, &hash_len, 0)) {
