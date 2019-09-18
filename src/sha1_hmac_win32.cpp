@@ -26,6 +26,7 @@
 #undef NOMINMAX
 #define NOMINMAX
 #include <windows.h>
+#undef ERROR
 // Note: wincrypt.h must be included after windows.h.
 #include <wincrypt.h>
 
@@ -104,6 +105,11 @@ std::pair<std::string, status::status_t> sha1_hmac(const std::string& key,
     CryptDestroyKey(crypt_key);
   }
   CryptReleaseContext(crypt_prov, 0);
+
+  // Ensure correct digest[] buffer indexing (e.g. if hash_len > MAX_DIGEST_LEN).
+  if (!is_success(return_status)) {
+    hash_len = 0;
+  }
 
   return std::make_pair(std::string(&digest[0], hash_len), return_status);
 }
