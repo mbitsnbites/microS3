@@ -32,19 +32,16 @@
 
 namespace us3 {
 
-std::pair<std::string, status::status_t> sha1_hmac(const std::string& key,
+std::pair<sha1_hmac_t, status::status_t> sha1_hmac(const std::string& key,
                                                    const std::string& data) {
-  static const int MAX_DIGEST_SIZE = 40;  // SHA1 requires 20 bytes - we add some to be sure.
-  char digest[MAX_DIGEST_SIZE];
-  DWORD hash_len = 0;
+  unsigned char raw_digest[sha1_hmac_t::SHA1_HMAC_RAW_SIZE];
+  status::status_t return_status = status::ERROR;
 
   // Windows implementation inspired by:
   // https://docs.microsoft.com/en-us/windows/desktop/seccrypto/example-c-program--creating-an-hmac
   HCRYPTPROV crypt_prov = 0;
   HCRYPTKEY crypt_key = 0;
   HCRYPTHASH crypt_hash = 0;
-
-  status::status_t return_status = status::ERROR;
 
   // Acquire a handle to the default RSA cryptographic service provider.
   if (CryptAcquireContext(&crypt_prov, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT)) {
@@ -80,11 +77,12 @@ std::pair<std::string, status::status_t> sha1_hmac(const std::string& key,
                             reinterpret_cast<const BYTE*>(data.data()),
                             static_cast<DWORD>(data.size()),
                             0)) {
+            DWORD hash_len = 0;
             if (CryptGetHashParam(crypt_hash, HP_HASHVAL, 0, &hash_len, 0)) {
-              if (hash_len <= MAX_DIGEST_SIZE) {
+              if (hash_len == sha1_hmac_t::SHA1_HMAC_RAW_SIZE) {
                 if (CryptGetHashParam(crypt_hash,
                                       HP_HASHVAL,
-                                      reinterpret_cast<BYTE*>(&digest[0]),
+                                      reinterpret_cast<BYTE*>(&raw_digest[0]),
                                       &hash_len,
                                       0)) {
                   return_status = status::SUCCESS;
@@ -106,12 +104,7 @@ std::pair<std::string, status::status_t> sha1_hmac(const std::string& key,
   }
   CryptReleaseContext(crypt_prov, 0);
 
-  // Ensure correct digest[] buffer indexing (e.g. if hash_len > MAX_DIGEST_LEN).
-  if (!is_success(return_status)) {
-    hash_len = 0;
-  }
-
-  return std::make_pair(std::string(&digest[0], hash_len), return_status);
+  return std::make_pair(sha1_hmac_t(&raw_digest[0]), return_status);
 }
 
 }  // namespace us3

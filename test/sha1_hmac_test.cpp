@@ -21,21 +21,6 @@
 #include <return_value.hpp>
 #include <sha1_hmac.hpp>
 
-namespace {
-
-std::string to_hex(const std::string& digest) {
-  static const char HEX_CHARS[] = "0123456789abcdef";
-  std::string result;
-  for (const auto x : digest) {
-    const auto byte = static_cast<unsigned int>(x);
-    result += HEX_CHARS[(byte >> 4) & 15];
-    result += HEX_CHARS[byte & 15];
-  }
-  return result;
-}
-
-}  // namespace
-
 TEST_CASE("Hash some strings") {
   SUBCASE("Hello world") {
     // GIVEN
@@ -47,8 +32,8 @@ TEST_CASE("Hash some strings") {
 
     // THEN
     CHECK_EQ(us3::is_success(result), true);
-    const auto actual = to_hex(us3::value(result));
-    CHECK_EQ(actual, "bdf48718a324277da43d5d71a5a7991bbe09e458");
+    const auto actual = std::string(us3::value(result).c_str());
+    CHECK_EQ(actual, "vfSHGKMkJ32kPV1xpaeZG74J5Fg=");
   }
 
   SUBCASE("Empty data") {
@@ -61,7 +46,7 @@ TEST_CASE("Hash some strings") {
 
     // THEN
     CHECK_EQ(us3::is_success(result), true);
-    const auto actual = to_hex(us3::value(result));
-    CHECK_EQ(actual, "28cfb82af65df022e08fa1a67121068c1d480bc8");
+    const auto actual = std::string(us3::value(result).c_str());
+    CHECK_EQ(actual, "KM+4KvZd8CLgj6GmcSEGjB1IC8g=");
   }
 }

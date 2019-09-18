@@ -24,10 +24,9 @@ namespace us3 {
 
 std::pair<std::string, status::status_t> sha1_hmac(const std::string& key,
                                                    const std::string& data) {
-  static const int DIGEST_SIZE = 20;  // SHA1
-  char digest[DIGEST_SIZE];
-  CCHmac(kCCHmacAlgSHA1, key.data(), key.size(), data.data(), data.size(), &digest[0]);
-  return std::make_pair(std::string(&digest[0], DIGEST_SIZE), status::SUCCESS);
+  unsigned char raw_digest[sha1_hmac_t::SHA1_HMAC_RAW_SIZE];
+  CCHmac(kCCHmacAlgSHA1, key.data(), key.size(), data.data(), data.size(), &raw_digest[0]);
+  return std::make_pair(sha1_hmac_t(&raw_digest[0]), status::SUCCESS);
 }
 
 }  // namespace us3
