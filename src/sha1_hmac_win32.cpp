@@ -33,9 +33,9 @@
 
 namespace us3 {
 
-std::pair<sha1_hmac_t, status::status_t> sha1_hmac(const char* key, const char* data) {
+result_t<sha1_hmac_t> sha1_hmac(const char* key, const char* data) {
   unsigned char raw_digest[sha1_hmac_t::SHA1_HMAC_RAW_SIZE];
-  status::status_t return_status = status::ERROR;
+  status_t::status_enum_t return_status = status_t::ERROR;
 
   // Windows implementation inspired by:
   // https://docs.microsoft.com/en-us/windows/desktop/seccrypto/example-c-program--creating-an-hmac
@@ -86,7 +86,7 @@ std::pair<sha1_hmac_t, status::status_t> sha1_hmac(const char* key, const char* 
                                       reinterpret_cast<BYTE*>(&raw_digest[0]),
                                       &hash_len,
                                       0)) {
-                  return_status = status::SUCCESS;
+                  return_status = status_t::SUCCESS;
                 }
               }
             }
@@ -105,7 +105,7 @@ std::pair<sha1_hmac_t, status::status_t> sha1_hmac(const char* key, const char* 
   }
   CryptReleaseContext(crypt_prov, 0);
 
-  return std::make_pair(sha1_hmac_t(raw_digest), return_status);
+  return make_result(sha1_hmac_t(raw_digest), return_status);
 }
 
 }  // namespace us3

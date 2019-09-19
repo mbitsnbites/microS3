@@ -77,7 +77,7 @@ private:
 /// @param key The secret key.
 /// @param data The data to hash.
 /// @returns the digest.
-std::pair<sha1_hmac_t, status::status_t> sha1_hmac(const char* key, const char* data);
+result_t<sha1_hmac_t> sha1_hmac(const char* key, const char* data);
 
 }  // namespace us3
 

@@ -36,7 +36,7 @@ struct url_parts_t {
 /// @brief Parse the given URL.
 /// @param url The URL to parse.
 /// @returns the different parts of the URL in a @c url_parts_t struct.
-std::pair<url_parts_t, status::status_t> parse_url(const char* url);
+result_t<url_parts_t> parse_url(const char* url);
 
 }  // namespace us3
 

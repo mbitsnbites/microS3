@@ -35,27 +35,22 @@ bool is_valid_handle(const us3_handle_t& handle) {
   return handle != NULL;
 }
 
-us3_status_t to_capi_status(const us3::status::status_t result) {
-  switch (result) {
-    case us3::status::SUCCESS:
+us3_status_t to_capi_status(const us3::status_t& result) {
+  switch (result.status()) {
+    case us3::status_t::SUCCESS:
       return US3_SUCCESS;
-    case us3::status::INVALID_ARGUMENT:
+    case us3::status_t::INVALID_ARGUMENT:
       return US3_INVALID_ARGUMENT;
-    case us3::status::INVALID_OPERATION:
+    case us3::status_t::INVALID_OPERATION:
       return US3_INVALID_OPERATION;
-    case us3::status::INVALID_URL:
+    case us3::status_t::INVALID_URL:
       return US3_INVALID_URL;
-    case us3::status::TIMEOUT:
+    case us3::status_t::TIMEOUT:
       return US3_TIMEOUT;
-    case us3::status::ERROR:
+    case us3::status_t::ERROR:
     default:
       return US3_ERROR;
   }
-}
-
-template <typename T>
-us3_status_t to_capi_status(const std::pair<T, us3::status::status_t>& result) {
-  return to_capi_status(result.second);
 }
 
 us3::connection_t::mode_t to_connection_mode(const us3_mode_t mode) {
@@ -100,7 +95,7 @@ US3_EXTERN us3_status_t us3_open(const char* host_name,
 
   // Open the connection.
   us3_handle_struct_t* new_handle = new us3_handle_struct_t;
-  const us3::status::status_t result =
+  const us3::status_t result =
       new_handle->connection.open(host_name,
                                   port,
                                   path,
@@ -109,7 +104,7 @@ US3_EXTERN us3_status_t us3_open(const char* host_name,
                                   to_connection_mode(mode),
                                   static_cast<us3::net::timeout_t>(connect_timeout),
                                   static_cast<us3::net::timeout_t>(socket_timeout));
-  if (!us3::is_success(result)) {
+  if (result.is_error()) {
     delete new_handle;
     return to_capi_status(result);
   }
@@ -131,22 +126,20 @@ US3_EXTERN us3_status_t us3_open_url(const char* url,
   }
 
   // Parse the URL.
-  const std::pair<us3::url_parts_t, us3::status::status_t> result = us3::parse_url(url);
-  if (!us3::is_success(result)) {
-    return to_capi_status(result);
+  const us3::result_t<us3::url_parts_t> url_parts = us3::parse_url(url);
+  if (url_parts.is_error()) {
+    return to_capi_status(url_parts);
   }
 
-  const us3::url_parts_t& url_parts = us3::value(result);
-
   // Make sure that the request was for an http URL (we don't support anything else a.t.m).
-  if (url_parts.scheme != "http") {
+  if (url_parts->scheme != "http") {
     return US3_INVALID_URL;
   }
 
   // Call the main us3_open() function.
-  return us3_open(url_parts.host.c_str(),
-                  url_parts.port,
-                  url_parts.path.c_str(),
+  return us3_open(url_parts->host.c_str(),
+                  url_parts->port,
+                  url_parts->path.c_str(),
                   access_key,
                   secret_key,
                   mode,
@@ -162,7 +155,7 @@ US3_EXTERN us3_status_t us3_close(us3_handle_t handle) {
   }
 
   // Close and delete the connection.
-  us3::status::status_t result = handle->connection.close();
+  us3::status_t result = handle->connection.close();
   delete handle;
   return to_capi_status(result);
 }
@@ -182,8 +175,8 @@ US3_EXTERN us3_status_t us3_read(us3_handle_t handle,
     return US3_INVALID_ARGUMENT;
   }
 
-  std::pair<size_t, us3::status::status_t> result = handle->connection.read(buf, count);
-  *actual_count = us3::value(result);
+  us3::result_t<size_t> result = handle->connection.read(buf, count);
+  *actual_count = *result;
   return to_capi_status(result);
 }
 
@@ -202,7 +195,7 @@ US3_EXTERN us3_status_t us3_write(us3_handle_t handle,
     return US3_INVALID_ARGUMENT;
   }
 
-  std::pair<size_t, us3::status::status_t> result = handle->connection.write(buf, count);
-  *actual_count = us3::value(result);
+  us3::result_t<size_t> result = handle->connection.write(buf, count);
+  *actual_count = *result;
   return to_capi_status(result);
 }

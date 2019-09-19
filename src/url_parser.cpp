@@ -35,7 +35,7 @@ int string_to_int(const char* str) {
 
 }  // namespace
 
-std::pair<url_parts_t, status::status_t> parse_url(const char* url) {
+result_t<url_parts_t> parse_url(const char* url) {
   url_parts_t parts;
   int k = 0;
   int part_start = 0;
@@ -44,7 +44,7 @@ std::pair<url_parts_t, status::status_t> parse_url(const char* url) {
   for (k = part_start; (url[k] != 0) && (url[k] != ':'); ++k)
     ;
   if ((url[k] != ':') || (url[k + 1] != '/') || (url[k + 2] != '/')) {
-    return std::make_pair(parts, status::INVALID_URL);
+    return make_result(parts, status_t::INVALID_URL);
   }
   parts.scheme = std::string(&url[part_start], k - part_start);
   part_start = k + 3;
@@ -53,7 +53,7 @@ std::pair<url_parts_t, status::status_t> parse_url(const char* url) {
   for (k = part_start; (url[k] != 0) && (url[k] != '@') && (url[k] != ':') && (url[k] != '/'); ++k)
     ;
   if ((url[k] == 0) || (url[k] == '@')) {
-    return std::make_pair(parts, status::INVALID_URL);
+    return make_result(parts, status_t::INVALID_URL);
   }
   const bool has_port = (url[k] == ':');
   parts.host = std::string(&url[part_start], k - part_start);
@@ -64,12 +64,12 @@ std::pair<url_parts_t, status::status_t> parse_url(const char* url) {
     for (k = part_start; (url[k] != 0) && (url[k] != '/'); ++k)
       ;
     if (url[k] != '/') {
-      return std::make_pair(parts, status::INVALID_URL);
+      return make_result(parts, status_t::INVALID_URL);
     }
     char* int_end;
     parts.port = static_cast<int>(std::strtol(&url[part_start], &int_end, 10));
     if ((parts.port == 0) || (int_end != &url[k])) {
-      return std::make_pair(parts, status::INVALID_URL);
+      return make_result(parts, status_t::INVALID_URL);
     }
     part_start = k;
   } else {
@@ -80,7 +80,7 @@ std::pair<url_parts_t, status::status_t> parse_url(const char* url) {
   // The rest is the path (we include query & fragment in the path).
   parts.path = std::string(&url[part_start]);
 
-  return std::make_pair(parts, status::SUCCESS);
+  return make_result(parts);
 }
 
 }  // namespace us3

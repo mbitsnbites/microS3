@@ -28,27 +28,29 @@ struct socket_struct_t {
   int fd;
 };
 
-std::pair<socket_t, status::status_t> connect(const char* host,
-                                              const int port,
-                                              const timeout_t connect_timeout,
-                                              const timeout_t socket_timeout) {
+result_t<socket_t> connect(const char* host,
+                           const int port,
+                           const timeout_t connect_timeout,
+                           const timeout_t socket_timeout) {
   // TODO(m): Implement me!
-  return std::make_pair(static_cast<socket_struct_t*>(0), status::ERROR);
+  return make_result(static_cast<socket_struct_t*>(0), status_t::ERROR);
 }
 
-status::status_t disconnect(socket_t socket) {
+status_t disconnect(socket_t socket) {
   // TODO(m): Implement me!
-  return status::ERROR;
+  return make_result(status_t::ERROR);
 }
 
-std::pair<size_t, status::status_t> send(socket_t socket, const void* buf, const size_t count) {
+result_t<size_t> send(socket_t socket, const void* buf, const size_t count) {
   // TODO(m): Implement me!
-  return std::make_pair(0, status::ERROR);
+  size_t actual_count = 0;
+  return make_result(actual_count, status_t::ERROR);
 }
 
-std::pair<size_t, status::status_t> recv(socket_t socket, void* buf, const size_t count) {
+result_t<size_t> recv(socket_t socket, void* buf, const size_t count) {
   // TODO(m): Implement me!
-  return std::make_pair(0, status::ERROR);
+  size_t actual_count = 0;
+  return make_result(actual_count, status_t::ERROR);
 }
 
 }  // namespace net

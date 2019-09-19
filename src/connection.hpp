@@ -44,17 +44,17 @@ public:
     }
   }
 
-  status::status_t open(const char* host_name,
-                        const int port,
-                        const char* path,
-                        const char* access_key,
-                        const char* secret_key,
-                        const mode_t mode,
-                        const net::timeout_t connect_timeout,
-                        const net::timeout_t socket_timeout);
-  status::status_t close();
-  std::pair<size_t, status::status_t> read(void* buf, const size_t count);
-  std::pair<size_t, status::status_t> write(const void* buf, const size_t count);
+  status_t open(const char* host_name,
+                const int port,
+                const char* path,
+                const char* access_key,
+                const char* secret_key,
+                const mode_t mode,
+                const net::timeout_t connect_timeout,
+                const net::timeout_t socket_timeout);
+  status_t close();
+  result_t<size_t> read(void* buf, const size_t count);
+  result_t<size_t> write(const void* buf, const size_t count);
 
 private:
   mode_t m_mode;

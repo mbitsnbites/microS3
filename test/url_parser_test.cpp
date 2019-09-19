@@ -34,12 +34,11 @@ TEST_CASE("Parse valid URL strings") {
     const auto result = us3::parse_url(url);
 
     // THEN
-    CHECK_EQ(us3::is_success(result), true);
-    const auto actual = us3::value(result);
-    CHECK_EQ(actual.scheme, "http");
-    CHECK_EQ(actual.host, "myhost");
-    CHECK_EQ(actual.port, 80);
-    CHECK_EQ(actual.path, "/hello/world");
+    CHECK_EQ(result.is_success(), true);
+    CHECK_EQ(result->scheme, "http");
+    CHECK_EQ(result->host, "myhost");
+    CHECK_EQ(result->port, 80);
+    CHECK_EQ(result->path, "/hello/world");
   }
 
   SUBCASE("Simple HTTPS URL") {
@@ -50,12 +49,11 @@ TEST_CASE("Parse valid URL strings") {
     const auto result = us3::parse_url(url);
 
     // THEN
-    CHECK_EQ(us3::is_success(result), true);
-    const auto actual = us3::value(result);
-    CHECK_EQ(actual.scheme, "https");
-    CHECK_EQ(actual.host, "myhost");
-    CHECK_EQ(actual.port, 443);
-    CHECK_EQ(actual.path, "/hello.foo");
+    CHECK_EQ(result.is_success(), true);
+    CHECK_EQ(result->scheme, "https");
+    CHECK_EQ(result->host, "myhost");
+    CHECK_EQ(result->port, 443);
+    CHECK_EQ(result->path, "/hello.foo");
   }
 
   SUBCASE("URL with port and query") {
@@ -66,11 +64,10 @@ TEST_CASE("Parse valid URL strings") {
     const auto result = us3::parse_url(url);
 
     // THEN
-    CHECK_EQ(us3::is_success(result), true);
-    const auto actual = us3::value(result);
-    CHECK_EQ(actual.scheme, "foo");
-    CHECK_EQ(actual.host, "othermachine");
-    CHECK_EQ(actual.port, 9876);
-    CHECK_EQ(actual.path, "/hello/world&who=me#flag");
+    CHECK_EQ(result.is_success(), true);
+    CHECK_EQ(result->scheme, "foo");
+    CHECK_EQ(result->host, "othermachine");
+    CHECK_EQ(result->port, 9876);
+    CHECK_EQ(result->path, "/hello/world&who=me#flag");
   }
 }

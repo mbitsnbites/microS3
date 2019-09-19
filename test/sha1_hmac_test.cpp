@@ -36,9 +36,8 @@ TEST_CASE("Hash some strings") {
     const auto result = us3::sha1_hmac(key, data);
 
     // THEN
-    CHECK_EQ(us3::is_success(result), true);
-    const auto actual = std::string(us3::value(result).c_str());
-    CHECK_EQ(actual, "vfSHGKMkJ32kPV1xpaeZG74J5Fg=");
+    CHECK_EQ(result.is_success(), true);
+    CHECK_EQ(std::string(result->c_str()), "vfSHGKMkJ32kPV1xpaeZG74J5Fg=");
   }
 
   SUBCASE("Empty data") {
@@ -50,8 +49,7 @@ TEST_CASE("Hash some strings") {
     const auto result = us3::sha1_hmac(key, data);
 
     // THEN
-    CHECK_EQ(us3::is_success(result), true);
-    const auto actual = std::string(us3::value(result).c_str());
-    CHECK_EQ(actual, "KM+4KvZd8CLgj6GmcSEGjB1IC8g=");
+    CHECK_EQ(result.is_success(), true);
+    CHECK_EQ(std::string(result->c_str()), "KM+4KvZd8CLgj6GmcSEGjB1IC8g=");
   }
 }

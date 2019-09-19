@@ -60,23 +60,23 @@ std::string mode_to_http_method(const connection_t::mode_t mode) {
 }
 }  // namespace
 
-status::status_t connection_t::open(const char* host_name,
-                                    const int port,
-                                    const char* path,
-                                    const char* access_key,
-                                    const char* secret_key,
-                                    const mode_t mode,
-                                    const net::timeout_t connect_timeout,
-                                    const net::timeout_t socket_timeout) {
+status_t connection_t::open(const char* host_name,
+                            const int port,
+                            const char* path,
+                            const char* access_key,
+                            const char* secret_key,
+                            const mode_t mode,
+                            const net::timeout_t connect_timeout,
+                            const net::timeout_t socket_timeout) {
   // Sanity check arguments.
   // Note: All pointers are guaranteed to be non-NULL at this point.
   if (port < 1 || port > 65535) {
-    return status::INVALID_OPERATION;
+    return make_result(status_t::INVALID_OPERATION);
   }
 
   // We must not open a connection that is already opened.
   if (m_mode != NONE) {
-    return status::INVALID_OPERATION;
+    return make_result(status_t::INVALID_OPERATION);
   }
 
   // Connect to the remote host.
@@ -91,12 +91,11 @@ status::status_t connection_t::open(const char* host_name,
   // Generate a signature based on the request info and the S3 secret key.
   const std::string string_to_sign =
       http_method + "\n\n" + content_type + "\n" + date_formatted + "\n" + relative_path;
-  const std::pair<sha1_hmac_t, status::status_t> digest =
-      sha1_hmac(secret_key, string_to_sign.c_str());
-  if (!is_success(digest)) {
-    return digest.second;
+  const result_t<sha1_hmac_t> digest = sha1_hmac(secret_key, string_to_sign.c_str());
+  if (digest.is_error()) {
+    return make_result(digest.status());
   }
-  const std::string signature = std::string(value(digest).c_str());
+  const std::string signature = std::string(digest->c_str());
 
   // Construct the HTTP request header.
   std::string http_header;
@@ -109,37 +108,37 @@ status::status_t connection_t::open(const char* host_name,
 
   // Send the HTTP header.
   // TODO(m): Implement me!
-  return status::ERROR;
+  return make_result(status_t::ERROR);
 }
 
-status::status_t connection_t::close() {
+status_t connection_t::close() {
   // We can not close a connection that is already closed.
   if (m_mode == NONE) {
-    return status::INVALID_OPERATION;
+    return make_result(status_t::INVALID_OPERATION);
   }
 
   // TODO(m): Implement me!
-  return status::ERROR;
+  return make_result(status_t::ERROR);
 }
 
-std::pair<size_t, status::status_t> connection_t::read(void* buf, const size_t count) {
+result_t<size_t> connection_t::read(void* buf, const size_t count) {
   // The connection must have been opened in read mode.
   if (m_mode != READ) {
-    return std::make_pair(0, status::INVALID_OPERATION);
+    return make_result<size_t>(0, status_t::INVALID_OPERATION);
   }
 
   // TODO(m): Implement me!
-  return std::make_pair(0, status::ERROR);
+  return make_result<size_t>(0, status_t::ERROR);
 }
 
-std::pair<size_t, status::status_t> connection_t::write(const void* buf, const size_t count) {
+result_t<size_t> connection_t::write(const void* buf, const size_t count) {
   // The connection must have been opened in write mode.
   if (m_mode != WRITE) {
-    return std::make_pair(0, status::INVALID_OPERATION);
+    return make_result<size_t>(0, status_t::INVALID_OPERATION);
   }
 
   // TODO(m): Implement me!
-  return std::make_pair(0, status::ERROR);
+  return make_result<size_t>(0, status_t::ERROR);
 }
 
 }  // namespace us3

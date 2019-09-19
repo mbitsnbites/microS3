@@ -20,52 +20,88 @@
 #ifndef US3_RETURN_VALUE_HPP_
 #define US3_RETURN_VALUE_HPP_
 
-#include <utility>
-
 namespace us3 {
-namespace status {
-/// @brief Possible function result codes.
-enum status_t {
-  SUCCESS,            ///< No error occurred.
-  ERROR,              ///< An unspcified error occurred.
-  INVALID_ARGUMENT,   ///< An invalid argument was passed to a function.
-  INVALID_OPERATION,  ///< An invalid operation was requested.
-  INVALID_URL,        ///< An invalid URL was passed to a function.
-  TIMEOUT             ///< The operation timed out.
+
+/// @brief A result object with a status code.
+class status_t {
+public:
+  /// @brief Possible function result codes.
+  enum status_enum_t {
+    SUCCESS,            ///< No error occurred.
+    ERROR,              ///< An unspcified error occurred.
+    INVALID_ARGUMENT,   ///< An invalid argument was passed to a function.
+    INVALID_OPERATION,  ///< An invalid operation was requested.
+    INVALID_URL,        ///< An invalid URL was passed to a function.
+    TIMEOUT             ///< The operation timed out.
+  };
+
+  explicit status_t(const status_enum_t s) : m_status(s) {
+  }
+
+  /// @brief Get the result status.
+  status_enum_t status() const {
+    return m_status;
+  }
+
+  /// @brief Check if the status indicates success.
+  bool is_success() const {
+    return m_status == SUCCESS;
+  }
+
+  /// @brief Check if the status indicates an error.
+  bool is_error() const {
+    return m_status != SUCCESS;
+  }
+
+private:
+  const status_enum_t m_status;
 };
-}  // namespace status
+
+/// @brief A result object with a value and a status code.
+template <typename T>
+class result_t : public status_t {
+public:
+  result_t(const T& v, const status_enum_t s) : status_t(s), m_value(v) {
+  }
+
+  /// @brief Get the result value.
+  const T& operator*() const {
+    return m_value;
+  }
+
+  /// @brief Get a reference to the result value.
+  const T* operator->() const {
+    return &m_value;
+  }
+
+private:
+  const T m_value;
+};
 
 namespace {
-/// @brief Get the value part of a function result.
-/// @param result The function result.
-/// @returns the return value of the function result.
+
+/// @brief Construct a result object with a value.
+/// @param v The result value.
+/// @note The status of the result object is @c SUCCESS.
 template <typename T>
-T& value(std::pair<T, status::status_t>& result) {
-  return result.first;
+result_t<T> make_result(const T& v) {
+  return result_t<T>(v, status_t::SUCCESS);
 }
 
-/// @brief Get the value part of a function result.
-/// @param result The function result.
-/// @returns the return value of the function result.
+/// @brief Construct a result object with a value and a status.
+/// @param v The result value.
+/// @param s The result status.
 template <typename T>
-const T& value(const std::pair<T, status::status_t>& result) {
-  return result.first;
+result_t<T> make_result(const T& v, const status_t::status_enum_t s) {
+  return result_t<T>(v, s);
 }
 
-/// @brief Determine if a status code indicates success or error.
-/// @param code The status code.
-/// @returns true if the code indicates that there was no error.
-bool is_success(const status::status_t result) {
-  return result == status::SUCCESS;
+/// @brief Construct a result object with a status.
+/// @param s The result status.
+status_t make_result(const status_t::status_enum_t s) {
+  return status_t(s);
 }
 
-/// @brief Determine if a function result indicates success or error.
-/// @param result The function result.
-/// @returns true if the result indicates that there was no error.
-template <typename T>
-bool is_success(const std::pair<T, status::status_t>& result) {
-  return is_success(result.second);
-}
 }  // namespace
 
 }  // namespace us3
