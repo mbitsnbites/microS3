@@ -87,7 +87,8 @@ typedef long us3_microseconds_t;
  * @param access_key The S3 access key.
  * @param secret_key The S3 secret key.
  * @param mode Open mode.
- * @param timeout Connection timeout in microseconds, or US3_NO_TIMEOUT for no timeout.
+ * @param connect_timeout Connection timeout in microseconds, or US3_NO_TIMEOUT for no timeout.
+ * @param socket_timeout Socket timeout in microseconds, or US3_NO_TIMEOUT for no timeout.
  * @param[out] handle The resulting handle.
  * @returns US3_SUCCESS on success, otherwise an error code.
  */
@@ -97,7 +98,8 @@ US3_EXTERN us3_status_t us3_open(const char* host_name,
                                  const char* access_key,
                                  const char* secret_key,
                                  const us3_mode_t mode,
-                                 const us3_microseconds_t timeout,
+                                 const us3_microseconds_t connect_timeout,
+                                 const us3_microseconds_t socket_timeout,
                                  us3_handle_t* handle);
 
 /**
@@ -106,7 +108,8 @@ US3_EXTERN us3_status_t us3_open(const char* host_name,
  * @param access_key The S3 access key.
  * @param secret_key The S3 secret key.
  * @param mode Open mode.
- * @param timeout Connection timeout in microseconds, or US3_NO_TIMEOUT for no timeout.
+ * @param connect_timeout Connection timeout in microseconds, or US3_NO_TIMEOUT for no timeout.
+ * @param socket_timeout Socket timeout in microseconds, or US3_NO_TIMEOUT for no timeout.
  * @param[out] handle The resulting handle.
  * @returns US3_SUCCESS on success, otherwise an error code.
  */
@@ -114,7 +117,8 @@ US3_EXTERN us3_status_t us3_open_url(const char* url,
                                      const char* access_key,
                                      const char* secret_key,
                                      const us3_mode_t mode,
-                                     const us3_microseconds_t timeout,
+                                     const us3_microseconds_t connect_timeout,
+                                     const us3_microseconds_t socket_timeout,
                                      us3_handle_t* handle);
 
 /**
@@ -129,14 +133,12 @@ US3_EXTERN us3_status_t us3_close(us3_handle_t handle);
  * @param handle The stream handle.
  * @param buf The target buffer.
  * @param count The number of bytes to read.
- * @param timeout Socket timeout in microseconds, or US3_NO_TIMEOUT for no timeout.
  * @param[out] actual_count The actual number of bytes read.
  * @returns US3_SUCCESS on success, otherwise an error code.
  */
 US3_EXTERN us3_status_t us3_read(us3_handle_t handle,
                                  void* buf,
                                  const size_t count,
-                                 const us3_microseconds_t timeout,
                                  size_t* actual_count);
 
 /**
@@ -144,14 +146,12 @@ US3_EXTERN us3_status_t us3_read(us3_handle_t handle,
  * @param handle The stream handle.
  * @param buf The source data buffer.
  * @param count The number of bytes to write.
- * @param timeout Socket timeout in microseconds, or US3_NO_TIMEOUT for no timeout.
  * @param[out] actual_count The actual number of bytes written.
  * @returns US3_SUCCESS on success, otherwise an error code.
  */
 US3_EXTERN us3_status_t us3_write(us3_handle_t handle,
                                   const void* buf,
                                   const size_t count,
-                                  const us3_microseconds_t timeout,
                                   size_t* actual_count);
 
 #endif /* US3_US3_H_ */

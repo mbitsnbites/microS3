@@ -17,12 +17,13 @@
 //  3. This notice may not be removed or altered from any source distribution.
 //--------------------------------------------------------------------------------------------------
 
+#include <us3/us3.h>
+
 #include "connection.hpp"
 #include "network_socket.hpp"
 #include "return_value.hpp"
 #include "url_parser.hpp"
 #include <cstring>
-#include <us3/us3.h>
 
 struct us3_handle_struct_t {
   us3::connection_t connection;
@@ -74,7 +75,8 @@ US3_EXTERN us3_status_t us3_open(const char* host_name,
                                  const char* access_key,
                                  const char* secret_key,
                                  const us3_mode_t mode,
-                                 const us3_microseconds_t timeout,
+                                 const us3_microseconds_t connect_timeout,
+                                 const us3_microseconds_t socket_timeout,
                                  us3_handle_t* handle) {
   // Sanity check arguments.
   if (host_name == NULL) {
@@ -105,7 +107,8 @@ US3_EXTERN us3_status_t us3_open(const char* host_name,
                                   access_key,
                                   secret_key,
                                   to_connection_mode(mode),
-                                  static_cast<us3::net::timeout_t>(timeout));
+                                  static_cast<us3::net::timeout_t>(connect_timeout),
+                                  static_cast<us3::net::timeout_t>(socket_timeout));
   if (!us3::is_success(result)) {
     delete new_handle;
     return to_capi_status(result);
@@ -119,7 +122,8 @@ US3_EXTERN us3_status_t us3_open_url(const char* url,
                                      const char* access_key,
                                      const char* secret_key,
                                      const us3_mode_t mode,
-                                     const us3_microseconds_t timeout,
+                                     const us3_microseconds_t connect_timeout,
+                                     const us3_microseconds_t socket_timeout,
                                      us3_handle_t* handle) {
   // Sanity check arguments.
   if (url == NULL) {
@@ -146,7 +150,8 @@ US3_EXTERN us3_status_t us3_open_url(const char* url,
                   access_key,
                   secret_key,
                   mode,
-                  timeout,
+                  connect_timeout,
+                  socket_timeout,
                   handle);
 }
 
@@ -165,7 +170,6 @@ US3_EXTERN us3_status_t us3_close(us3_handle_t handle) {
 US3_EXTERN us3_status_t us3_read(us3_handle_t handle,
                                  void* buf,
                                  const size_t count,
-                                 const us3_microseconds_t timeout,
                                  size_t* actual_count) {
   // Sanity check arguments.
   if (!is_valid_handle(handle)) {
@@ -178,14 +182,14 @@ US3_EXTERN us3_status_t us3_read(us3_handle_t handle,
     return US3_INVALID_ARGUMENT;
   }
 
-  return to_capi_status(handle->connection.read(
-      buf, count, static_cast<us3::net::timeout_t>(timeout), *actual_count));
+  std::pair<size_t, us3::status::status_t> result = handle->connection.read(buf, count);
+  *actual_count = us3::value(result);
+  return to_capi_status(result);
 }
 
 US3_EXTERN us3_status_t us3_write(us3_handle_t handle,
                                   const void* buf,
                                   const size_t count,
-                                  const us3_microseconds_t timeout,
                                   size_t* actual_count) {
   // Sanity check arguments.
   if (!is_valid_handle(handle)) {
@@ -198,6 +202,7 @@ US3_EXTERN us3_status_t us3_write(us3_handle_t handle,
     return US3_INVALID_ARGUMENT;
   }
 
-  return to_capi_status(handle->connection.write(
-      buf, count, static_cast<us3::net::timeout_t>(timeout), *actual_count));
+  std::pair<size_t, us3::status::status_t> result = handle->connection.write(buf, count);
+  *actual_count = us3::value(result);
+  return to_capi_status(result);
 }

@@ -50,16 +50,11 @@ public:
                         const char* access_key,
                         const char* secret_key,
                         const mode_t mode,
-                        const net::timeout_t timeout);
+                        const net::timeout_t connect_timeout,
+                        const net::timeout_t socket_timeout);
   status::status_t close();
-  status::status_t read(void* buf,
-                        const size_t count,
-                        const net::timeout_t timeout,
-                        size_t& actual_count);
-  status::status_t write(const void* buf,
-                         const size_t count,
-                         const net::timeout_t timeout,
-                         size_t& actual_count);
+  std::pair<size_t, status::status_t> read(void* buf, const size_t count);
+  std::pair<size_t, status::status_t> write(const void* buf, const size_t count);
 
 private:
   mode_t m_mode;

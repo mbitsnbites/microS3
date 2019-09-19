@@ -18,6 +18,8 @@
 //--------------------------------------------------------------------------------------------------
 
 #include "connection.hpp"
+
+#include "network_socket.hpp"
 #include "sha1_hmac.hpp"
 #include <clocale>
 #include <ctime>
@@ -64,7 +66,8 @@ status::status_t connection_t::open(const char* host_name,
                                     const char* access_key,
                                     const char* secret_key,
                                     const mode_t mode,
-                                    const net::timeout_t timeout) {
+                                    const net::timeout_t connect_timeout,
+                                    const net::timeout_t socket_timeout) {
   // Sanity check arguments.
   // Note: All pointers are guaranteed to be non-NULL at this point.
   if (port < 1 || port > 65535) {
@@ -119,30 +122,24 @@ status::status_t connection_t::close() {
   return status::ERROR;
 }
 
-status::status_t connection_t::read(void* buf,
-                                    const size_t count,
-                                    const net::timeout_t timeout,
-                                    size_t& actual_count) {
+std::pair<size_t, status::status_t> connection_t::read(void* buf, const size_t count) {
   // The connection must have been opened in read mode.
   if (m_mode != READ) {
-    return status::INVALID_OPERATION;
+    return std::make_pair(0, status::INVALID_OPERATION);
   }
 
   // TODO(m): Implement me!
-  return status::ERROR;
+  return std::make_pair(0, status::ERROR);
 }
 
-status::status_t connection_t::write(const void* buf,
-                                     const size_t count,
-                                     const net::timeout_t timeout,
-                                     size_t& actual_count) {
+std::pair<size_t, status::status_t> connection_t::write(const void* buf, const size_t count) {
   // The connection must have been opened in write mode.
   if (m_mode != WRITE) {
-    return status::INVALID_OPERATION;
+    return std::make_pair(0, status::INVALID_OPERATION);
   }
 
   // TODO(m): Implement me!
-  return status::ERROR;
+  return std::make_pair(0, status::ERROR);
 }
 
 }  // namespace us3

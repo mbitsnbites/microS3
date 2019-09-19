@@ -30,7 +30,8 @@ struct socket_struct_t {
 
 std::pair<socket_t, status::status_t> connect(const char* host,
                                               const int port,
-                                              const timeout_t timeout) {
+                                              const timeout_t connect_timeout,
+                                              const timeout_t socket_timeout) {
   // TODO(m): Implement me!
   return std::make_pair(static_cast<socket_struct_t*>(0), status::ERROR);
 }
@@ -40,18 +41,12 @@ status::status_t disconnect(socket_t socket) {
   return status::ERROR;
 }
 
-std::pair<size_t, status::status_t> send(socket_t socket,
-                                         const void* buf,
-                                         const size_t count,
-                                         const timeout_t timeout) {
+std::pair<size_t, status::status_t> send(socket_t socket, const void* buf, const size_t count) {
   // TODO(m): Implement me!
   return std::make_pair(0, status::ERROR);
 }
 
-std::pair<size_t, status::status_t> recv(socket_t socket,
-                                         void* buf,
-                                         const size_t count,
-                                         const timeout_t timeout) {
+std::pair<size_t, status::status_t> recv(socket_t socket, void* buf, const size_t count) {
   // TODO(m): Implement me!
   return std::make_pair(0, status::ERROR);
 }

@@ -18,10 +18,12 @@
 //--------------------------------------------------------------------------------------------------
 
 #include "url_parser.hpp"
+
 #include <cstdlib>
 
 namespace us3 {
 namespace {
+
 int string_to_int(const char* str) {
   char* end;
   const long int x = std::strtol(str, &end, 10);
@@ -77,4 +79,5 @@ std::pair<url_parts_t, status::status_t> parse_url(const char* url) {
 
   return std::make_pair(parts, status::SUCCESS);
 }
+
 }  // namespace us3

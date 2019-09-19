@@ -18,6 +18,7 @@
 //--------------------------------------------------------------------------------------------------
 
 #include "sha1_hmac.hpp"
+
 #include <CommonCrypto/CommonHMAC.h>
 #include <cstring>
 
