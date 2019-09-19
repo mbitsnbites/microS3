@@ -33,7 +33,7 @@ int string_to_int(const char* str) {
   return static_cast<int>(x);
 }
 
-} // namespace
+}  // namespace
 
 std::pair<url_parts_t, status::status_t> parse_url(const char* url) {
   url_parts_t parts;
@@ -41,7 +41,8 @@ std::pair<url_parts_t, status::status_t> parse_url(const char* url) {
   int part_start = 0;
 
   // Extract the scheme.
-  for (k = part_start; (url[k] != 0) && (url[k] != ':'); ++k);
+  for (k = part_start; (url[k] != 0) && (url[k] != ':'); ++k)
+    ;
   if ((url[k] != ':') || (url[k + 1] != '/') || (url[k + 2] != '/')) {
     return std::make_pair(parts, status::INVALID_URL);
   }
@@ -49,7 +50,8 @@ std::pair<url_parts_t, status::status_t> parse_url(const char* url) {
   part_start = k + 3;
 
   // Extract the host.
-  for (k = part_start; (url[k] != 0) && (url[k] != '@') && (url[k] != ':') && (url[k] != '/'); ++k);
+  for (k = part_start; (url[k] != 0) && (url[k] != '@') && (url[k] != ':') && (url[k] != '/'); ++k)
+    ;
   if ((url[k] == 0) || (url[k] == '@')) {
     return std::make_pair(parts, status::INVALID_URL);
   }
@@ -59,7 +61,8 @@ std::pair<url_parts_t, status::status_t> parse_url(const char* url) {
 
   // Extract the port.
   if (has_port) {
-    for (k = part_start; (url[k] != 0) && (url[k] != '/'); ++k);
+    for (k = part_start; (url[k] != 0) && (url[k] != '/'); ++k)
+      ;
     if (url[k] != '/') {
       return std::make_pair(parts, status::INVALID_URL);
     }
