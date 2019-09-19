@@ -19,7 +19,6 @@
 
 #include "connection.hpp"
 
-#include "network_socket.hpp"
 #include "sha1_hmac.hpp"
 #include <clocale>
 #include <ctime>
@@ -27,6 +26,7 @@
 namespace us3 {
 
 namespace {
+
 std::string get_date_rfc2616_gmt() {
   // TODO(m): setlocale() is not guaranteed to be thread safe. Can we do this in a more thread safe
   // manner?
@@ -58,6 +58,21 @@ std::string mode_to_http_method(const connection_t::mode_t mode) {
     return "GET";
   }
 }
+
+status_t send_string(net::socket_t socket, const std::string& str) {
+  size_t remaining = str.size();
+  size_t sent = 0;
+  while (remaining > 0) {
+    const result_t<size_t> count = net::send(socket, &str[sent], remaining);
+    if (count.is_error()) {
+      return make_result(count.status());
+    }
+    remaining -= *count;
+    sent += *count;
+  }
+  return make_result(status_t::SUCCESS);
+}
+
 }  // namespace
 
 status_t connection_t::open(const char* host_name,
@@ -80,7 +95,14 @@ status_t connection_t::open(const char* host_name,
   }
 
   // Connect to the remote host.
-  // TODO(m): Implement me!
+  result_t<net::socket_t> socket = net::connect(host_name, port, connect_timeout, socket_timeout);
+  if (socket.is_error()) {
+    return make_result(socket.status());
+  }
+
+  // We're now officially connected.
+  m_mode = mode;
+  m_socket = *socket;
 
   // Gather information for the HTTP request.
   const std::string http_method = mode_to_http_method(mode);
@@ -107,8 +129,7 @@ status_t connection_t::open(const char* host_name,
   http_header += "\r\n\r\n";
 
   // Send the HTTP header.
-  // TODO(m): Implement me!
-  return make_result(status_t::ERROR);
+  return send_string(m_socket, http_header);
 }
 
 status_t connection_t::close() {
@@ -117,8 +138,14 @@ status_t connection_t::close() {
     return make_result(status_t::INVALID_OPERATION);
   }
 
-  // TODO(m): Implement me!
-  return make_result(status_t::ERROR);
+  // Disconnect.
+  status_t result = net::disconnect(m_socket);
+
+  // We're no longer connected.
+  m_mode = NONE;
+  m_socket = NULL;
+
+  return result;
 }
 
 result_t<size_t> connection_t::read(void* buf, const size_t count) {
@@ -127,8 +154,7 @@ result_t<size_t> connection_t::read(void* buf, const size_t count) {
     return make_result<size_t>(0, status_t::INVALID_OPERATION);
   }
 
-  // TODO(m): Implement me!
-  return make_result<size_t>(0, status_t::ERROR);
+  return net::recv(m_socket, buf, count);
 }
 
 result_t<size_t> connection_t::write(const void* buf, const size_t count) {
@@ -137,8 +163,7 @@ result_t<size_t> connection_t::write(const void* buf, const size_t count) {
     return make_result<size_t>(0, status_t::INVALID_OPERATION);
   }
 
-  // TODO(m): Implement me!
-  return make_result<size_t>(0, status_t::ERROR);
+  return net::send(m_socket, buf, count);
 }
 
 }  // namespace us3

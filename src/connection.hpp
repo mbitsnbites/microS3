@@ -35,7 +35,7 @@ public:
     WRITE = 2  ///< The stream is open in write mode.
   };
 
-  connection_t() : m_mode(NONE) {
+  connection_t() : m_mode(NONE), m_socket(NULL) {
   }
 
   ~connection_t() {
@@ -52,12 +52,20 @@ public:
                 const mode_t mode,
                 const net::timeout_t connect_timeout,
                 const net::timeout_t socket_timeout);
+
   status_t close();
+
   result_t<size_t> read(void* buf, const size_t count);
+
   result_t<size_t> write(const void* buf, const size_t count);
+
+  bool is_connected() const {
+    return m_mode != NONE;
+  }
 
 private:
   mode_t m_mode;
+  net::socket_t m_socket;
 };
 
 }  // namespace us3
