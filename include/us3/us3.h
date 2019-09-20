@@ -85,6 +85,13 @@ typedef long us3_microseconds_t;
 #define US3_NO_TIMEOUT 0
 
 /**
+ * @brief Convert a status code to a string.
+ * @param status The status code.
+ * @returns a string that describes the status code.
+ */
+US3_EXTERN const char* us3_status_str(const us3_status_t status);
+
+/**
  * @brief Open an S3 stream.
  * @param host_name Name of the S3 host (can also be an IP address).
  * @param port The host port number.

@@ -25,6 +25,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(US3_SOURCES
   capi.cpp
+  capi_status.cpp
   connection.cpp
   connection.hpp
   network_socket.hpp
