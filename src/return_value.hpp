@@ -32,6 +32,11 @@ public:
     INVALID_ARGUMENT,   ///< An invalid argument was passed to a function.
     INVALID_OPERATION,  ///< An invalid operation was requested.
     INVALID_URL,        ///< An invalid URL was passed to a function.
+    NO_HOST,            ///< No such host was found.
+    DENIED,             ///< Access denied.
+    REFUSED,            ///< The connection was refused.
+    UNREACHABLE,        ///< The network is unreachable.
+    CONNECTION_RESET,   ///< The connection was reset by the peer.
     TIMEOUT             ///< The operation timed out.
   };
 

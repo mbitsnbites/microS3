@@ -45,6 +45,16 @@ us3_status_t to_capi_status(const us3::status_t& result) {
       return US3_INVALID_OPERATION;
     case us3::status_t::INVALID_URL:
       return US3_INVALID_URL;
+    case us3::status_t::NO_HOST:
+      return US3_NO_HOST;
+    case us3::status_t::DENIED:
+      return US3_DENIED;
+    case us3::status_t::REFUSED:
+      return US3_REFUSED;
+    case us3::status_t::UNREACHABLE:
+      return US3_UNREACHABLE;
+    case us3::status_t::CONNECTION_RESET:
+      return US3_CONNECTION_RESET;
     case us3::status_t::TIMEOUT:
       return US3_TIMEOUT;
     case us3::status_t::ERROR:

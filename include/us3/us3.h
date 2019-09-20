@@ -60,7 +60,12 @@ typedef enum {
   US3_INVALID_HANDLE = 3,    /**< An invalid stream handle was passed to a function. */
   US3_INVALID_OPERATION = 4, /**< An invalid operation was requested. */
   US3_INVALID_URL = 5,       /**< An invalid URL was passed to a function. */
-  US3_TIMEOUT = 6            /**< The operation timed out. */
+  US3_NO_HOST = 6,           /**< No such host was found. */
+  US3_DENIED = 7,            /**< Access denied. */
+  US3_REFUSED = 8,           /**< The connection was refused. */
+  US3_UNREACHABLE = 9,       /**< The network is unreachable. */
+  US3_CONNECTION_RESET = 10, /**< The connection was reset by the peer. */
+  US3_TIMEOUT = 11           /**< The operation timed out. */
 } us3_status_t;
 
 /** @brief Stream mode. */
