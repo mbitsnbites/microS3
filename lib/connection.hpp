@@ -66,6 +66,7 @@ public:
 private:
   mode_t m_mode;
   net::socket_t m_socket;
+  size_t m_content_size;
 };
 
 }  // namespace us3

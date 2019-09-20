@@ -95,25 +95,24 @@ int main(const int argc, const char** argv) {
   }
 
   // Read & write...
-  int success = 1;
-  #define BUF_SIZE 4096
+  int success = 0;
+  #define BUF_SIZE 32768
   static char buf[BUF_SIZE];
   while (1) {
     size_t bytes_in_buf;
     us3_status_t read_status = us3_read(s3_handle, &buf[0], BUF_SIZE, &bytes_in_buf);
     if (read_status != US3_SUCCESS) {
       fprintf(stderr, "*** Read error: %s\n", us3_status_str(read_status));
-      success = 0;
       break;
     }
     if (bytes_in_buf == 0) {
       // Done!
+      success = 1;
       break;
     }
     size_t bytes_written = fwrite(&buf[0], 1, bytes_in_buf, file);
     if (bytes_written != bytes_in_buf) {
       fprintf(stderr, "*** Write error\n");
-      success = 0;
       break;
     }
   }

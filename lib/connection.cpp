@@ -129,7 +129,17 @@ status_t connection_t::open(const char* host_name,
   http_header += "\r\n\r\n";
 
   // Send the HTTP header.
-  return send_string(m_socket, http_header);
+  {
+    status_t header_send_status = send_string(m_socket, http_header);
+    if (header_send_status.is_error()) {
+      return  make_result(header_send_status.status());;
+    }
+  }
+
+  // Read the HTTP response.
+  // TODO(m): Implement me!
+  m_content_size = 0;
+  return  make_result(status_t::ERROR);
 }
 
 status_t connection_t::close() {

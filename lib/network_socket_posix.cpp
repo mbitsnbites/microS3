@@ -105,7 +105,7 @@ result_t<size_t> send(socket_t socket, const void* buf, const size_t count) {
   if (actual_count == -1) {
     return make_result<size_t>(0, errno_to_status());
   }
-  return make_result(static_cast<size_t>(actual_count), status_t::ERROR);
+  return make_result(static_cast<size_t>(actual_count), status_t::SUCCESS);
 }
 
 result_t<size_t> recv(socket_t socket, void* buf, const size_t count) {
@@ -113,7 +113,7 @@ result_t<size_t> recv(socket_t socket, void* buf, const size_t count) {
   if (actual_count == -1) {
     return make_result<size_t>(0, errno_to_status());
   }
-  return make_result(static_cast<size_t>(actual_count), status_t::ERROR);
+  return make_result(static_cast<size_t>(actual_count), status_t::SUCCESS);
 }
 
 }  // namespace net
