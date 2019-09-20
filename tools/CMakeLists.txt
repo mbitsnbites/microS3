@@ -17,30 +17,5 @@
 #  3. This notice may not be removed or altered from any source distribution.
 ###################################################################################################
 
-cmake_minimum_required(VERSION 3.5)
-project(microS3)
-
-enable_testing()
-
-# The us3 library.
-add_subdirectory(lib)
-
-# Tools.
-add_subdirectory(tools)
-
-# Tests.
-add_subdirectory(test)
-
-# API documentation.
-find_package(Doxygen)
-if(DOXYGEN_FOUND AND NOT (${CMAKE_VERSION} VERSION_LESS "3.9.0"))
-  set(DOXYGEN_PROJECT_NAME microS3)
-  set(DOXYGEN_OUTPUT_DIRECTORY apidoc)
-  set(DOXYGEN_GENERATE_HTML YES)
-  set(DOXYGEN_OPTIMIZE_FOR_C YES)
-  set(DOXYGEN_QUIET YES)
-  set(DOXYGEN_WARN_IF_UNDOCUMENTED NO)
-  doxygen_add_docs(apidoc
-                   include
-                   COMMENT "Generating API documentation with Doxygen")
-endif()
+add_executable(us3get us3get.c)
+target_link_libraries(us3get us3)
