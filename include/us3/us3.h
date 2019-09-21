@@ -55,7 +55,7 @@
 /** @brief Return value for μS3 functions. */
 typedef enum {
   US3_SUCCESS = 0,           /**< No error occurred. */
-  US3_ERROR = 1,             /**< An unspcified error occurred. */
+  US3_ERROR = 1,             /**< An unspecified error occurred. */
   US3_INVALID_ARGUMENT = 2,  /**< An invalid argument was passed to a function. */
   US3_INVALID_HANDLE = 3,    /**< An invalid stream handle was passed to a function. */
   US3_INVALID_OPERATION = 4, /**< An invalid operation was requested. */

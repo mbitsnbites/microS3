@@ -28,7 +28,7 @@ public:
   /// @brief Possible function result codes.
   enum status_enum_t {
     SUCCESS,            ///< No error occurred.
-    ERROR,              ///< An unspcified error occurred.
+    ERROR,              ///< An unspecified error occurred.
     INVALID_ARGUMENT,   ///< An invalid argument was passed to a function.
     INVALID_OPERATION,  ///< An invalid operation was requested.
     INVALID_URL,        ///< An invalid URL was passed to a function.

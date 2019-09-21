@@ -24,7 +24,7 @@ US3_EXTERN const char* us3_status_str(const us3_status_t status) {
     case US3_SUCCESS:
       return "No error occurred";
     case US3_ERROR:
-      return "An unspcified error occurred";
+      return "An unspecified error occurred";
     case US3_INVALID_ARGUMENT:
       return "An invalid argument was passed to a function";
     case US3_INVALID_HANDLE:
