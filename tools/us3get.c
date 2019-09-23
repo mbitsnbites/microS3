@@ -18,16 +18,21 @@
 //--------------------------------------------------------------------------------------------------
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <us3/us3.h>
 
 static void show_usage(const char* program) {
   fprintf(stderr, "Usage: %s [options] URL [FILE]\n\n", program);
-  fprintf(stderr, "  URL               The S3 object URL\n");
-  fprintf(stderr, "  FILE              Output file (optional)\n\n");
+  fprintf(stderr, "  URL   The S3 object URL\n");
+  fprintf(stderr, "  FILE  Output file (optional)\n\n");
   fprintf(stderr, "Options:\n");
-  fprintf(stderr, "  --access-key KEY  The S3 access key\n");
-  fprintf(stderr, "  --secret-key KEY  The S3 secret key\n\n");
+  fprintf(stderr, "  -a, --access-key KEY      The S3 access key\n");
+  fprintf(stderr, "  -A, --access-key-env ENV  Name of an environment variable holding the\n");
+  fprintf(stderr, "                            S3 access key\n");
+  fprintf(stderr, "  -s, --secret-key KEY      The S3 secret key\n");
+  fprintf(stderr, "  -S, --secret-key-env ENV  Name of an environment variable holding the\n");
+  fprintf(stderr, "                            S3 secret key\n\n");
   fprintf(stderr, "If FILE is not specified, the data will be written to stdout.\n");
 }
 
@@ -42,20 +47,42 @@ int main(const int argc, const char** argv) {
   for (int i = 1; i < argc; ++i) {
     if ((strcmp(argv[i], "--help") == 0) || (strcmp(argv[i], "-h") == 0)) {
       show_usage(program);
-      return 0;
-    } else if (strcmp(argv[i], "--access-key") == 0) {
+      exit(EXIT_SUCCESS);
+    } else if ((strcmp(argv[i], "--access-key") == 0) || (strcmp(argv[i], "-a") == 0)) {
       if (i >= (argc - 1)) {
         bad_args = 1;
         break;
       }
       access_key = argv[i + 1];
       ++i;
-    } else if (strcmp(argv[i], "--secret-key") == 0) {
+    } else if ((strcmp(argv[i], "--access-key-env") == 0) || (strcmp(argv[i], "-A") == 0)) {
+      if (i >= (argc - 1)) {
+        bad_args = 1;
+        break;
+      }
+      access_key = getenv(argv[i + 1]);
+      if (access_key == NULL) {
+        fprintf(stderr, "*** No such environment variable: %s\n", argv[i + 1]);
+        exit(EXIT_FAILURE);
+      }
+      ++i;
+    } else if ((strcmp(argv[i], "--secret-key") == 0) || (strcmp(argv[i], "-s") == 0)) {
       if (i >= (argc - 1)) {
         bad_args = 1;
         break;
       }
       secret_key = argv[i + 1];
+      ++i;
+    } else if ((strcmp(argv[i], "--secret-key-env") == 0) || (strcmp(argv[i], "-S") == 0)) {
+      if (i >= (argc - 1)) {
+        bad_args = 1;
+        break;
+      }
+      secret_key = getenv(argv[i + 1]);
+      if (secret_key == NULL) {
+        fprintf(stderr, "*** No such environment variable: %s\n", argv[i + 1]);
+        exit(EXIT_FAILURE);
+      }
       ++i;
     } else if (url == NULL) {
       url = argv[i];
@@ -68,7 +95,7 @@ int main(const int argc, const char** argv) {
   }
   if (bad_args || (url == NULL) || (access_key == NULL) || (secret_key == NULL)) {
     show_usage(program);
-    return 1;
+    exit(EXIT_FAILURE);
   }
 
   // Open the S3 stream.
@@ -78,7 +105,7 @@ int main(const int argc, const char** argv) {
         url, access_key, secret_key, US3_READ, US3_NO_TIMEOUT, US3_NO_TIMEOUT, &s3_handle);
     if (open_status != US3_SUCCESS) {
       fprintf(stderr, "*** Unable to open %s: %s\n", url, us3_status_str(open_status));
-      return 1;
+      exit(EXIT_FAILURE);
     }
   }
 
@@ -90,12 +117,13 @@ int main(const int argc, const char** argv) {
     if (file == NULL) {
       fprintf(stderr, "*** Unable to open %s for output\n", file_name);
       us3_close(s3_handle);
+      exit(EXIT_FAILURE);
     }
     output_to_file = 1;
   }
 
   // Read & write...
-  int success = 0;
+  int exit_status = EXIT_FAILURE;
   #define BUF_SIZE 32768
   static char buf[BUF_SIZE];
   while (1) {
@@ -107,7 +135,7 @@ int main(const int argc, const char** argv) {
     }
     if (bytes_in_buf == 0) {
       // Done!
-      success = 1;
+      exit_status = EXIT_SUCCESS;
       break;
     }
     size_t bytes_written = fwrite(&buf[0], 1, bytes_in_buf, file);
@@ -123,5 +151,5 @@ int main(const int argc, const char** argv) {
   }
   us3_close(s3_handle);
 
-  return success ? 0 : 1;
+  exit(exit_status);
 }
