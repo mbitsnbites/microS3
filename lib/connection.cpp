@@ -20,12 +20,29 @@
 #include "connection.hpp"
 
 #include "sha1_hmac.hpp"
+#include <cctype>
 #include <clocale>
+#include <cstdlib>
+#include <cstring>
 #include <ctime>
 
 namespace us3 {
 
 namespace {
+
+struct header_field_t {
+  header_field_t(const std::string& n, const std::string& v) : name(n), value(v) {
+  }
+  header_field_t() {
+  }
+
+  operator bool() const {
+    return !name.empty();
+  }
+
+  std::string name;
+  std::string value;
+};
 
 std::string get_date_rfc2616_gmt() {
   // TODO(m): setlocale() is not guaranteed to be thread safe. Can we do this in a more thread safe
@@ -71,6 +88,62 @@ status_t send_string(net::socket_t socket, const std::string& str) {
     sent += *count;
   }
   return make_result(status_t::SUCCESS);
+}
+
+std::string extract_line(const char* buf, const size_t buf_size, const bool has_cr = false) {
+  // Empty buffer -> empty string.
+  if (buf_size == 0) {
+    return std::string();
+  }
+
+  // Do we already have a CR from a previous string?
+  if (has_cr && buf[0] == '\n') {
+    return std::string(buf, 1);
+  }
+
+  // Try to find a new-line marker (CRLF).
+  for (size_t i = 0; i < (buf_size - 1); ++i) {
+    if (buf[i] == '\r' && buf[i + 1] == '\n') {
+      return std::string(buf, i + 2);
+    }
+  }
+
+  // Return an incomplete string.
+  return std::string(buf, buf_size);
+}
+
+header_field_t parse_header_field(const std::string& line) {
+  // Find the separating colon.
+  const std::string::size_type colon_pos = line.find(':');
+  if (colon_pos == std::string::npos) {
+    return header_field_t();
+  }
+
+  // Extract the field name and turn it into lowercase.
+  std::string name(line.c_str(), colon_pos);
+  for (std::string::iterator it = name.begin(); it != name.end(); it++) {
+    unsigned char c = *it;
+    if (c >= static_cast<unsigned char>('A') && c <= static_cast<unsigned char>('Z')) {
+      *it = *it - ('Z' - 'z');
+    }
+  }
+
+  // Extract the field value and strip leading and trailing spaces.
+  std::string value;
+  {
+    size_t start_pos;
+    for (start_pos = colon_pos + 1; start_pos < line.size() && std::isspace(line[start_pos]);
+         ++start_pos)
+      ;
+    if (start_pos < line.size()) {
+      size_t end_pos;
+      for (end_pos = line.size() - 1; end_pos > start_pos && std::isspace(line[end_pos]); --end_pos)
+        ;
+      value = line.substr(start_pos, end_pos - start_pos + 1);
+    }
+  }
+
+  return header_field_t(name, value);
 }
 
 }  // namespace
@@ -132,14 +205,14 @@ status_t connection_t::open(const char* host_name,
   {
     status_t header_send_status = send_string(m_socket, http_header);
     if (header_send_status.is_error()) {
-      return  make_result(header_send_status.status());;
+      return make_result(header_send_status.status());
+      ;
     }
   }
 
   // Read the HTTP response.
-  // TODO(m): Implement me!
-  m_content_size = 0;
-  return  make_result(status_t::ERROR);
+  // TODO(m): Should we do this as part of "close" for WRITE contexts instead?
+  return read_http_response();
 }
 
 status_t connection_t::close() {
@@ -164,7 +237,27 @@ result_t<size_t> connection_t::read(void* buf, const size_t count) {
     return make_result<size_t>(0, status_t::INVALID_OPERATION);
   }
 
-  return net::recv(m_socket, buf, count);
+  char* target = reinterpret_cast<char*>(buf);
+  size_t bytes_left = count;
+
+  // If we have leftovers in the internal buffer we start by copying them.
+  const size_t bytes_from_buffer = bytes_left < m_buffer_size ? bytes_left : m_buffer_size;
+  if (bytes_from_buffer > 0) {
+    std::memcpy(target, &m_buffer[m_buffer_pos], bytes_from_buffer);
+    m_buffer_pos += bytes_from_buffer;
+    m_buffer_size -= bytes_from_buffer;
+    target += bytes_from_buffer;
+    bytes_left -= bytes_from_buffer;
+  }
+  if (bytes_left == 0) {
+    return make_result(count, status_t::SUCCESS);
+  }
+
+  // Retrieve the rest of the bytes from the socket.
+  result_t<size_t> bytes_from_socket = net::recv(m_socket, target, bytes_left);
+
+  const size_t actual_count = bytes_from_buffer + *bytes_from_socket;
+  return make_result(actual_count, bytes_from_socket.status());
 }
 
 result_t<size_t> connection_t::write(const void* buf, const size_t count) {
@@ -174,6 +267,97 @@ result_t<size_t> connection_t::write(const void* buf, const size_t count) {
   }
 
   return net::send(m_socket, buf, count);
+}
+
+status_t connection_t::read_http_response() {
+  m_status_line.clear();
+  m_content_length = 0;
+  m_has_content_length = false;
+
+  bool have_http_response = false;
+  std::string incomplete_line;
+  while (!have_http_response) {
+    // Read more data into our buffer.
+    status_t result = read_data_to_buffer();
+    if (result.is_error()) {
+      return result;
+    }
+
+    // Read lines.
+    while (m_buffer_size > 0) {
+      // Extract a new string from the buffer.
+      const bool has_cr =
+          (incomplete_line.size() > 0 && incomplete_line[incomplete_line.size() - 1] == '\r');
+      std::string line = extract_line(&m_buffer[m_buffer_pos], m_buffer_size, has_cr);
+      m_buffer_pos += line.size();
+      m_buffer_size -= line.size();
+
+      // Prepend a previous incomplete line (if any).
+      line = incomplete_line + line;
+
+      // Final blank line that terminates the HTTP response?
+      if (line == "\r\n") {
+        have_http_response = true;
+        break;
+      }
+
+      // Incomplete line (i.e. we've reached the end of the buffer but we don't have a terminating
+      // CRLF)?
+      if (m_buffer_size == 0 &&
+          (line.size() < 2 || (line[line.size() - 2] != '\r' || line[line.size() - 1] != '\n'))) {
+        incomplete_line = line;
+        break;
+      } else {
+        incomplete_line = "";
+      }
+
+      // Sanity check.
+      if (line.size() < 2) {
+        return make_result(status_t::ERROR);
+      }
+
+      // We now have a CRLF-terminated HTTP response line.
+      if (m_status_line.empty()) {
+        // The first line is the status line. Remove the trailing \r\n.
+        m_status_line = line.substr(0, line.size() - 2);
+      } else {
+        header_field_t header_field = parse_header_field(line);
+        if (header_field) {
+          m_response_fields[header_field.name] = header_field.value;
+        }
+      }
+    }
+  }
+
+  // Parse the content-length field (if present).
+  {
+    std::map<std::string, std::string>::const_iterator field =
+        m_response_fields.find("content-length");
+    if (field != m_response_fields.end()) {
+      const long int x = std::strtol(field->second.c_str(), NULL, 10);
+      m_content_length = static_cast<size_t>(x);
+      m_has_content_length = true;
+    }
+  }
+
+  return make_result(have_http_response ? status_t::SUCCESS : status_t::ERROR);
+}
+
+status_t connection_t::read_data_to_buffer() {
+  // End of buffer reached?
+  if (m_buffer_pos == MAX_BUFFER_SIZE) {
+    m_buffer_pos = 0;
+  }
+
+  // Try to read enough data to fill the buffer.
+  const size_t bytes_to_read = MAX_BUFFER_SIZE - (m_buffer_pos + m_buffer_size);
+  result_t<size_t> result = net::recv(m_socket, &m_buffer[m_buffer_pos], bytes_to_read);
+  if (result.is_error()) {
+    return make_result(result.status());
+  }
+  m_buffer_size += *result;
+
+  return make_result(status_t::SUCCESS);
 }
 
 }  // namespace us3

@@ -22,6 +22,8 @@
 
 #include "network_socket.hpp"
 #include "return_value.hpp"
+#include <cstddef>
+#include <map>
 #include <string>
 
 namespace us3 {
@@ -35,7 +37,13 @@ public:
     WRITE = 2  ///< The stream is open in write mode.
   };
 
-  connection_t() : m_mode(NONE), m_socket(NULL) {
+  connection_t()
+      : m_mode(NONE),
+        m_socket(NULL),
+        m_buffer_pos(0),
+        m_buffer_size(0),
+        m_content_length(0),
+        m_has_content_length(false) {
   }
 
   ~connection_t() {
@@ -64,9 +72,24 @@ public:
   }
 
 private:
+  static const size_t MAX_BUFFER_SIZE = 1024;
+
   mode_t m_mode;
   net::socket_t m_socket;
-  size_t m_content_size;
+
+  // Internal buffer used for reading the HTTP response.
+  size_t m_buffer_pos;
+  size_t m_buffer_size;
+  char m_buffer[MAX_BUFFER_SIZE];
+
+  // HTTP response values.
+  std::string m_status_line;
+  std::map<std::string, std::string> m_response_fields;
+  size_t m_content_length;
+  bool m_has_content_length;
+
+  status_t read_http_response();
+  status_t read_data_to_buffer();
 };
 
 }  // namespace us3
