@@ -17,5 +17,10 @@
 #  3. This notice may not be removed or altered from any source distribution.
 ###################################################################################################
 
+# We use C90 for the tools. This is mostly to ensure that the microS3 C API is valid C90.
+set(CMAKE_C_STANDARD 90)
+set(C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS OFF)
+
 add_executable(us3get us3get.c)
 target_link_libraries(us3get us3)
