@@ -1,3 +1,7 @@
 # QtCreator generates this file
 CMakeLists.txt.user
 
+# Ignore build folders
+build*
+out*
+
