@@ -78,9 +78,7 @@ us3::connection_t::mode_t to_connection_mode(const us3_mode_t mode) {
 }
 }  // namespace
 
-US3_EXTERN us3_status_t us3_open(const char* host_name,
-                                 const int port,
-                                 const char* path,
+US3_EXTERN us3_status_t us3_open(const char* url,
                                  const char* access_key,
                                  const char* secret_key,
                                  const us3_mode_t mode,
@@ -89,10 +87,7 @@ US3_EXTERN us3_status_t us3_open(const char* host_name,
                                  const us3_microseconds_t socket_timeout,
                                  us3_handle_t* handle) {
   // Sanity check arguments.
-  if (host_name == NULL) {
-    return US3_INVALID_ARGUMENT;
-  }
-  if (path == NULL) {
+  if (url == NULL) {
     return US3_INVALID_ARGUMENT;
   }
   if (access_key == NULL) {
@@ -108,12 +103,23 @@ US3_EXTERN us3_status_t us3_open(const char* host_name,
     return US3_INVALID_ARGUMENT;
   }
 
+  // Parse the URL.
+  const us3::result_t<us3::url_parts_t> url_parts = us3::parse_url(url);
+  if (url_parts.is_error()) {
+    return to_capi_status(url_parts);
+  }
+
+  // Make sure that the request was for an http URL (we don't support anything else a.t.m).
+  if (url_parts->scheme != "http") {
+    return US3_INVALID_URL;
+  }
+
   // Open the connection.
   us3_handle_struct_t* new_handle = new us3_handle_struct_t;
   const us3::status_t result =
-      new_handle->connection.open(host_name,
-                                  port,
-                                  path,
+      new_handle->connection.open(url_parts->host.c_str(),
+                                  url_parts->port,
+                                  url_parts->path.c_str(),
                                   access_key,
                                   secret_key,
                                   to_connection_mode(mode),
@@ -127,43 +133,6 @@ US3_EXTERN us3_status_t us3_open(const char* host_name,
 
   *handle = new_handle;
   return US3_SUCCESS;
-}
-
-US3_EXTERN us3_status_t us3_open_url(const char* url,
-                                     const char* access_key,
-                                     const char* secret_key,
-                                     const us3_mode_t mode,
-                                     const size_t size,
-                                     const us3_microseconds_t connect_timeout,
-                                     const us3_microseconds_t socket_timeout,
-                                     us3_handle_t* handle) {
-  // Sanity check arguments.
-  if (url == NULL) {
-    return US3_INVALID_ARGUMENT;
-  }
-
-  // Parse the URL.
-  const us3::result_t<us3::url_parts_t> url_parts = us3::parse_url(url);
-  if (url_parts.is_error()) {
-    return to_capi_status(url_parts);
-  }
-
-  // Make sure that the request was for an http URL (we don't support anything else a.t.m).
-  if (url_parts->scheme != "http") {
-    return US3_INVALID_URL;
-  }
-
-  // Call the main us3_open() function.
-  return us3_open(url_parts->host.c_str(),
-                  url_parts->port,
-                  url_parts->path.c_str(),
-                  access_key,
-                  secret_key,
-                  mode,
-                  size,
-                  connect_timeout,
-                  socket_timeout,
-                  handle);
 }
 
 US3_EXTERN us3_status_t us3_close(us3_handle_t handle) {

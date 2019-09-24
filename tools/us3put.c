@@ -126,14 +126,14 @@ int main(const int argc, const char** argv) {
 
   /* Open the S3 stream. */
   {
-    us3_status_t open_status = us3_open_url(url,
-                                            access_key,
-                                            secret_key,
-                                            US3_WRITE,
-                                            file_size,
-                                            US3_NO_TIMEOUT,
-                                            US3_NO_TIMEOUT,
-                                            &s3_handle);
+    us3_status_t open_status = us3_open(url,
+                                        access_key,
+                                        secret_key,
+                                        US3_WRITE,
+                                        file_size,
+                                        US3_NO_TIMEOUT,
+                                        US3_NO_TIMEOUT,
+                                        &s3_handle);
     if (open_status != US3_SUCCESS) {
       fprintf(stderr, "*** Unable to open %s: %s\n", url, us3_status_str(open_status));
       fclose(file);

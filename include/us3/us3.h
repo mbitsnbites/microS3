@@ -41,11 +41,16 @@
  *
  * @section funcs_sec Public API functions
  *
+ * @li us3_status_str() - Convert a status code to a string.
+ *
  * @li us3_open() - Open an S3 stream.
- * @li us3_open_url() - Open an S3 stream.
  * @li us3_close() - Close an S3 stream.
  * @li us3_read() - Read data from an S3 stream.
  * @li us3_write() - Write data to an S3 stream.
+ *
+ * @li us3_get_status_line() - Get the HTTP response status line.
+ * @li us3_get_response_field() - Get a HTTP response field value.
+ * @li us3_get_content_length() - Get the S3 stream content length (in bytes)
  *
  * @section types_sec About API types
  *
@@ -95,31 +100,6 @@ US3_EXTERN const char* us3_status_str(const us3_status_t status);
 
 /**
  * @brief Open an S3 stream.
- * @param host_name Name of the S3 host (can also be an IP address).
- * @param port The host port number.
- * @param path The object name (what comes after the host in an URL - including the leading /).
- * @param access_key The S3 access key.
- * @param secret_key The S3 secret key.
- * @param mode Open mode.
- * @param size Number of bytes to write (ignored when mode is not WRITE).
- * @param connect_timeout Connection timeout in microseconds, or US3_NO_TIMEOUT for no timeout.
- * @param socket_timeout Socket timeout in microseconds, or US3_NO_TIMEOUT for no timeout.
- * @param[out] handle The resulting handle.
- * @returns US3_SUCCESS on success, otherwise an error code.
- */
-US3_EXTERN us3_status_t us3_open(const char* host_name,
-                                 const int port,
-                                 const char* path,
-                                 const char* access_key,
-                                 const char* secret_key,
-                                 const us3_mode_t mode,
-                                 const size_t size,
-                                 const us3_microseconds_t connect_timeout,
-                                 const us3_microseconds_t socket_timeout,
-                                 us3_handle_t* handle);
-
-/**
- * @brief Open an S3 stream.
  * @param url Complete S3 URL.
  * @param access_key The S3 access key.
  * @param secret_key The S3 secret key.
@@ -130,14 +110,14 @@ US3_EXTERN us3_status_t us3_open(const char* host_name,
  * @param[out] handle The resulting handle.
  * @returns US3_SUCCESS on success, otherwise an error code.
  */
-US3_EXTERN us3_status_t us3_open_url(const char* url,
-                                     const char* access_key,
-                                     const char* secret_key,
-                                     const us3_mode_t mode,
-                                     const size_t size,
-                                     const us3_microseconds_t connect_timeout,
-                                     const us3_microseconds_t socket_timeout,
-                                     us3_handle_t* handle);
+US3_EXTERN us3_status_t us3_open(const char* url,
+                                 const char* access_key,
+                                 const char* secret_key,
+                                 const us3_mode_t mode,
+                                 const size_t size,
+                                 const us3_microseconds_t connect_timeout,
+                                 const us3_microseconds_t socket_timeout,
+                                 us3_handle_t* handle);
 
 /**
  * @brief Close an S3 stream.
