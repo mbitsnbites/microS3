@@ -228,13 +228,16 @@ status_t connection_t::open(const char* host_name,
     status_t header_send_status = send_string(m_socket, http_header.str());
     if (header_send_status.is_error()) {
       return make_result(header_send_status.status());
-      ;
     }
   }
 
-  // Read the HTTP response.
-  // TODO(m): Should we do this as part of "close" for WRITE contexts instead?
-  return read_http_response();
+  // If we're done sending data (i.e. we're in READ mode), read the HTTP response now. Otherwise
+  // we defer the read to after we're done sending our message.
+  m_have_http_response = false;
+  if (m_mode == READ) {
+    return read_http_response();
+  }
+  return make_result(status_t::SUCCESS);
 }
 
 status_t connection_t::close() {
@@ -314,6 +317,11 @@ result_t<size_t> connection_t::write(const void* buf, const size_t count) {
     m_content_left -= *actual_count;
   }
 
+  // If we're done writing data, now is a good time to read the HTTP response.
+  if (m_content_left == 0) {
+    read_http_response();
+  }
+
   return actual_count;
 }
 
@@ -349,6 +357,11 @@ result_t<size_t> connection_t::get_content_length() {
 }
 
 status_t connection_t::read_http_response() {
+  // We do not have to read the HTTP reponse again if we already have it.
+  if (m_have_http_response) {
+    return make_result(status_t::SUCCESS);
+  }
+
   m_status_line.clear();
 
   if (m_mode == READ) {
@@ -358,9 +371,8 @@ status_t connection_t::read_http_response() {
     m_is_chunked = false;
   }
 
-  bool have_http_response = false;
   std::string incomplete_line;
-  while (!have_http_response) {
+  while (!m_have_http_response) {
     // Read more data into our buffer.
     status_t result = read_data_to_buffer();
     if (result.is_error()) {
@@ -381,7 +393,7 @@ status_t connection_t::read_http_response() {
 
       // Final blank line that terminates the HTTP response?
       if (line == "\r\n") {
-        have_http_response = true;
+        m_have_http_response = true;
         break;
       }
 
@@ -440,7 +452,7 @@ status_t connection_t::read_http_response() {
 
   // TODO(m): Check the HTTP status code (should be "HTTP/1.1 200 OK").
 
-  return make_result(have_http_response ? status_t::SUCCESS : status_t::ERROR);
+  return make_result(m_have_http_response ? status_t::SUCCESS : status_t::ERROR);
 }
 
 status_t connection_t::read_data_to_buffer() {
