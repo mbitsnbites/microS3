@@ -57,6 +57,8 @@ us3_status_t to_capi_status(const us3::status_t& result) {
       return US3_CONNECTION_RESET;
     case us3::status_t::TIMEOUT:
       return US3_TIMEOUT;
+    case us3::status_t::UNSUPPORTED:
+      return US3_UNSUPPORTED;
     case us3::status_t::NO_SUCH_FIELD:
       return US3_NO_SUCH_FIELD;
     case us3::status_t::ERROR:

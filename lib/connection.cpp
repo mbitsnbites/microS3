@@ -238,6 +238,11 @@ result_t<size_t> connection_t::read(void* buf, const size_t count) {
     return make_result<size_t>(0, status_t::INVALID_OPERATION);
   }
 
+  // TODO(m): Implement support for chunked transfer.
+  if (m_is_chunked || !m_has_content_length) {
+    return make_result<size_t>(0, status_t::UNSUPPORTED);
+  }
+
   char* target = reinterpret_cast<char*>(buf);
   size_t bytes_left = std::min(count, m_content_left);
   size_t actual_count = 0;
@@ -310,6 +315,7 @@ status_t connection_t::read_http_response() {
   m_status_line.clear();
   m_content_length = 0;
   m_has_content_length = false;
+  m_is_chunked = false;
 
   bool have_http_response = false;
   std::string incomplete_line;
@@ -375,6 +381,17 @@ status_t connection_t::read_http_response() {
       m_content_length = static_cast<size_t>(x);
       m_content_left = m_content_length;
       m_has_content_length = true;
+    }
+  }
+
+  // Check if this is a chunked transfer.
+  {
+    std::map<std::string, std::string>::const_iterator field =
+        m_response_fields.find("transfer-encoding");
+    if (field != m_response_fields.end()) {
+      if (field->second.find("chunked") != std::string::npos) {
+        m_is_chunked = true;
+      }
     }
   }
 

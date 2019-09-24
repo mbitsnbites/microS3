@@ -44,7 +44,8 @@ public:
         m_buffer_size(0),
         m_content_length(0),
         m_content_left(0),
-        m_has_content_length(false) {
+        m_has_content_length(false),
+        m_is_chunked(false) {
   }
 
   ~connection_t() {
@@ -93,6 +94,7 @@ private:
   size_t m_content_length;
   size_t m_content_left;
   bool m_has_content_length;
+  bool m_is_chunked;
 
   status_t read_http_response();
   status_t read_data_to_buffer();

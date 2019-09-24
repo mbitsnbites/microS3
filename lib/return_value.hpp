@@ -38,6 +38,7 @@ public:
     UNREACHABLE,        ///< The network is unreachable.
     CONNECTION_RESET,   ///< The connection was reset by the peer.
     TIMEOUT,            ///< The operation timed out.
+    UNSUPPORTED,        ///< An unsupported protocol function was encountered.
     NO_SUCH_FIELD       ///< The requested field was not found.
   };
 

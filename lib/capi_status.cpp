@@ -45,6 +45,8 @@ US3_EXTERN const char* us3_status_str(const us3_status_t status) {
       return "The connection was reset by the peer";
     case US3_TIMEOUT:
       return "The operation timed out";
+    case US3_UNSUPPORTED:
+      return "An unsupported protocol function was encountered";
     case US3_NO_SUCH_FIELD:
       return "The requested field was not found";
     default:

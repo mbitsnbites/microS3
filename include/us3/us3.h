@@ -66,7 +66,8 @@ typedef enum {
   US3_UNREACHABLE = 9,       /**< The network is unreachable. */
   US3_CONNECTION_RESET = 10, /**< The connection was reset by the peer. */
   US3_TIMEOUT = 11,          /**< The operation timed out. */
-  US3_NO_SUCH_FIELD = 12     /**< The requested field was not found. */
+  US3_UNSUPPORTED = 12,      /**< An unsupported protocol function was encountered. */
+  US3_NO_SUCH_FIELD = 13     /**< The requested field was not found. */
 } us3_status_t;
 
 /** @brief Stream mode. */
