@@ -101,6 +101,7 @@ US3_EXTERN const char* us3_status_str(const us3_status_t status);
  * @param access_key The S3 access key.
  * @param secret_key The S3 secret key.
  * @param mode Open mode.
+ * @param size Number of bytes to write (ignored when mode is not WRITE).
  * @param connect_timeout Connection timeout in microseconds, or US3_NO_TIMEOUT for no timeout.
  * @param socket_timeout Socket timeout in microseconds, or US3_NO_TIMEOUT for no timeout.
  * @param[out] handle The resulting handle.
@@ -112,6 +113,7 @@ US3_EXTERN us3_status_t us3_open(const char* host_name,
                                  const char* access_key,
                                  const char* secret_key,
                                  const us3_mode_t mode,
+                                 const size_t size,
                                  const us3_microseconds_t connect_timeout,
                                  const us3_microseconds_t socket_timeout,
                                  us3_handle_t* handle);
@@ -122,6 +124,7 @@ US3_EXTERN us3_status_t us3_open(const char* host_name,
  * @param access_key The S3 access key.
  * @param secret_key The S3 secret key.
  * @param mode Open mode.
+ * @param size Number of bytes to write (ignored when mode is not WRITE).
  * @param connect_timeout Connection timeout in microseconds, or US3_NO_TIMEOUT for no timeout.
  * @param socket_timeout Socket timeout in microseconds, or US3_NO_TIMEOUT for no timeout.
  * @param[out] handle The resulting handle.
@@ -131,6 +134,7 @@ US3_EXTERN us3_status_t us3_open_url(const char* url,
                                      const char* access_key,
                                      const char* secret_key,
                                      const us3_mode_t mode,
+                                     const size_t size,
                                      const us3_microseconds_t connect_timeout,
                                      const us3_microseconds_t socket_timeout,
                                      us3_handle_t* handle);

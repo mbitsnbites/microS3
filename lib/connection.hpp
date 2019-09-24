@@ -60,6 +60,7 @@ public:
                 const char* access_key,
                 const char* secret_key,
                 const mode_t mode,
+                const size_t size,
                 const net::timeout_t connect_timeout,
                 const net::timeout_t socket_timeout);
 

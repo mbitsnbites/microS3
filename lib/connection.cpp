@@ -26,6 +26,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
+#include <sstream>
 
 namespace us3 {
 
@@ -155,6 +156,7 @@ status_t connection_t::open(const char* host_name,
                             const char* access_key,
                             const char* secret_key,
                             const mode_t mode,
+                            const size_t size,
                             const net::timeout_t connect_timeout,
                             const net::timeout_t socket_timeout) {
   // Sanity check arguments.
@@ -178,6 +180,22 @@ status_t connection_t::open(const char* host_name,
   m_mode = mode;
   m_socket = *socket;
 
+  if (mode == WRITE) {
+    // Determine how to write data.
+    if (size > 0) {
+      m_has_content_length = true;
+      m_content_length = size;
+      m_content_left = size;
+      m_is_chunked = false;
+    } else {
+      m_has_content_length = false;
+      m_is_chunked = true;
+    }
+  } else {
+    m_has_content_length = false;
+    m_is_chunked = false;
+  }
+
   // Gather information for the HTTP request.
   const std::string http_method = mode_to_http_method(mode);
   const std::string content_type = "application/octet-stream";
@@ -194,17 +212,20 @@ status_t connection_t::open(const char* host_name,
   const std::string signature = std::string(digest->c_str());
 
   // Construct the HTTP request header.
-  std::string http_header;
-  http_header += http_method + " " + std::string(path) + " HTTP/1.1";
-  http_header += "\r\nHost: " + std::string(host_name);
-  http_header += "\r\nContent-Type: " + content_type;
-  http_header += "\r\nDate: " + date_formatted;
-  http_header += "\r\nAuthorization: AWS " + std::string(access_key) + ":" + signature;
-  http_header += "\r\n\r\n";
+  std::ostringstream http_header;
+  http_header << http_method << " " << path << " HTTP/1.1";
+  http_header << "\r\nHost: " << host_name;
+  http_header << "\r\nContent-Type: " << content_type;
+  http_header << "\r\nDate: " << date_formatted;
+  http_header << "\r\nAuthorization: AWS " << access_key << ":" << signature;
+  if (m_has_content_length) {
+    http_header << "\r\nContent-Length: " << m_content_length;
+  }
+  http_header << "\r\n\r\n";
 
   // Send the HTTP header.
   {
-    status_t header_send_status = send_string(m_socket, http_header);
+    status_t header_send_status = send_string(m_socket, http_header.str());
     if (header_send_status.is_error()) {
       return make_result(header_send_status.status());
       ;
@@ -277,7 +298,23 @@ result_t<size_t> connection_t::write(const void* buf, const size_t count) {
     return make_result<size_t>(0, status_t::INVALID_OPERATION);
   }
 
-  return net::send(m_socket, buf, count);
+  // TODO(m): Implement support for chunked transfer.
+  if (m_is_chunked || !m_has_content_length) {
+    return make_result<size_t>(0, status_t::UNSUPPORTED);
+  }
+
+  // We should not send more data than we have said that we will send.
+  if (m_has_content_length && count > m_content_left) {
+    return make_result<size_t>(0, status_t::INVALID_OPERATION);
+  }
+
+  // Send the buffer over the socket.
+  result_t<size_t> actual_count = net::send(m_socket, buf, count);
+  if (actual_count.is_success()) {
+    m_content_left -= *actual_count;
+  }
+
+  return actual_count;
 }
 
 result_t<const char*> connection_t::get_status_line() {
@@ -313,9 +350,13 @@ result_t<size_t> connection_t::get_content_length() {
 
 status_t connection_t::read_http_response() {
   m_status_line.clear();
-  m_content_length = 0;
-  m_has_content_length = false;
-  m_is_chunked = false;
+
+  if (m_mode == READ) {
+    m_content_length = 0;
+    m_content_left = 0;
+    m_has_content_length = false;
+    m_is_chunked = false;
+  }
 
   bool have_http_response = false;
   std::string incomplete_line;
@@ -372,28 +413,32 @@ status_t connection_t::read_http_response() {
     }
   }
 
-  // Parse the content-length field (if present).
-  {
-    std::map<std::string, std::string>::const_iterator field =
-        m_response_fields.find("content-length");
-    if (field != m_response_fields.end()) {
-      const long int x = std::strtol(field->second.c_str(), NULL, 10);
-      m_content_length = static_cast<size_t>(x);
-      m_content_left = m_content_length;
-      m_has_content_length = true;
+  if (m_mode == READ) {
+    // Parse the content-length field (if present).
+    {
+      std::map<std::string, std::string>::const_iterator field =
+          m_response_fields.find("content-length");
+      if (field != m_response_fields.end()) {
+        const long int x = std::strtol(field->second.c_str(), NULL, 10);
+        m_content_length = static_cast<size_t>(x);
+        m_content_left = m_content_length;
+        m_has_content_length = true;
+      }
     }
-  }
 
-  // Check if this is a chunked transfer.
-  {
-    std::map<std::string, std::string>::const_iterator field =
-        m_response_fields.find("transfer-encoding");
-    if (field != m_response_fields.end()) {
-      if (field->second.find("chunked") != std::string::npos) {
-        m_is_chunked = true;
+    // Check if this is a chunked transfer.
+    {
+      std::map<std::string, std::string>::const_iterator field =
+          m_response_fields.find("transfer-encoding");
+      if (field != m_response_fields.end()) {
+        if (field->second.find("chunked") != std::string::npos) {
+          m_is_chunked = true;
+        }
       }
     }
   }
+
+  // TODO(m): Check the HTTP status code (should be "HTTP/1.1 200 OK").
 
   return make_result(have_http_response ? status_t::SUCCESS : status_t::ERROR);
 }
