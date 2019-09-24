@@ -24,3 +24,6 @@ set(CMAKE_C_EXTENSIONS OFF)
 
 add_executable(us3get us3get.c)
 target_link_libraries(us3get us3)
+
+add_executable(us3put us3put.c)
+target_link_libraries(us3put us3)
