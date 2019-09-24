@@ -71,6 +71,10 @@ public:
     return m_mode != NONE;
   }
 
+  result_t<const char*> get_status_line();
+  result_t<const char*> get_response_field(const char* name);
+  result_t<size_t> get_content_length();
+
 private:
   static const size_t MAX_BUFFER_SIZE = 1024;
 

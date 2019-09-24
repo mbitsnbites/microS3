@@ -36,6 +36,7 @@ static void show_usage(const char* program) {
   fprintf(stderr, "  -s, --secret-key KEY      The S3 secret key\n");
   fprintf(stderr, "  -S, --secret-key-env ENV  Name of an environment variable holding the\n");
   fprintf(stderr, "                            S3 secret key\n\n");
+  fprintf(stderr, "  -v, --verbose             Be verbose\n\n");
   fprintf(stderr, "If FILE is not specified, the data will be written to stdout.\n");
 }
 
@@ -45,6 +46,7 @@ int main(const int argc, const char** argv) {
   const char* file_name = NULL;
   const char* access_key = NULL;
   const char* secret_key = NULL;
+  int verbose = 0;
   int bad_args = 0;
   int i;
   int output_to_file;
@@ -58,6 +60,8 @@ int main(const int argc, const char** argv) {
     if ((strcmp(argv[i], "--help") == 0) || (strcmp(argv[i], "-h") == 0)) {
       show_usage(program);
       exit(EXIT_SUCCESS);
+    } else if ((strcmp(argv[i], "--verbose") == 0) || (strcmp(argv[i], "-v") == 0)) {
+      verbose = 1;
     } else if ((strcmp(argv[i], "--access-key") == 0) || (strcmp(argv[i], "-a") == 0)) {
       if (i >= (argc - 1)) {
         bad_args = 1;
@@ -115,6 +119,22 @@ int main(const int argc, const char** argv) {
     if (open_status != US3_SUCCESS) {
       fprintf(stderr, "*** Unable to open %s: %s\n", url, us3_status_str(open_status));
       exit(EXIT_FAILURE);
+    }
+  }
+
+  /* Print some info... */
+  if (verbose) {
+    const char* status_line;
+    const char* content_type;
+    size_t content_length;
+    if (us3_get_status_line(s3_handle, &status_line) == US3_SUCCESS) {
+      fprintf(stderr, "Status: %s\n", status_line);
+    }
+    if (us3_get_response_field(s3_handle, "content-type", &content_type) == US3_SUCCESS) {
+      fprintf(stderr, "Content type: %s\n", content_type);
+    }
+    if (us3_get_content_length(s3_handle, &content_length) == US3_SUCCESS) {
+      fprintf(stderr, "Content length: %ld\n", content_length);
     }
   }
 

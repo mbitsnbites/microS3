@@ -65,7 +65,8 @@ typedef enum {
   US3_REFUSED = 8,           /**< The connection was refused. */
   US3_UNREACHABLE = 9,       /**< The network is unreachable. */
   US3_CONNECTION_RESET = 10, /**< The connection was reset by the peer. */
-  US3_TIMEOUT = 11           /**< The operation timed out. */
+  US3_TIMEOUT = 11,          /**< The operation timed out. */
+  US3_NO_SUCH_FIELD = 12     /**< The requested field was not found. */
 } us3_status_t;
 
 /** @brief Stream mode. */
@@ -165,5 +166,34 @@ US3_EXTERN us3_status_t us3_write(us3_handle_t handle,
                                   const void* buf,
                                   const size_t count,
                                   size_t* actual_count);
+
+/**
+ * @brief Get the HTTP response status line.
+ * @param handle The stream handle to query.
+ * @param[out] status_line The HTTP response status line value.
+ * @returns US3_SUCCESS on success, otherwise an error code.
+ */
+US3_EXTERN us3_status_t us3_get_status_line(us3_handle_t handle, const char** status_line);
+
+/**
+ * @brief Get a HTTP response field value.
+ * @param handle The stream handle to query.
+ * @param name The lower case name of the field (e.g. "content-type").
+ * @param[out] value The field value.
+ * @returns US3_SUCCESS on success, otherwise an error code. If the field was not given in the HTTP
+ * response message, US3_NO_SUCH_FIELD is returned (and *value is set to NULL).
+ */
+US3_EXTERN us3_status_t us3_get_response_field(us3_handle_t handle,
+                                               const char* name,
+                                               const char** value);
+
+/**
+ * @brief Get the S3 stream content length (in bytes).
+ * @param handle The stream handle to query.
+ * @param[out] content_length The content length as specified by the HTTP response.
+ * @returns US3_SUCCESS on success, otherwise an error code. If the content length was not given in
+ * the HTTP response message, US3_NO_SUCH_FIELD is returned (and *content_length is set to 0).
+ */
+US3_EXTERN us3_status_t us3_get_content_length(us3_handle_t handle, size_t* content_length);
 
 #endif /* US3_US3_H_ */

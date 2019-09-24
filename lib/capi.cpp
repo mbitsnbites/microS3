@@ -57,6 +57,8 @@ us3_status_t to_capi_status(const us3::status_t& result) {
       return US3_CONNECTION_RESET;
     case us3::status_t::TIMEOUT:
       return US3_TIMEOUT;
+    case us3::status_t::NO_SUCH_FIELD:
+      return US3_NO_SUCH_FIELD;
     case us3::status_t::ERROR:
     default:
       return US3_ERROR;
@@ -207,5 +209,52 @@ US3_EXTERN us3_status_t us3_write(us3_handle_t handle,
 
   us3::result_t<size_t> result = handle->connection.write(buf, count);
   *actual_count = *result;
+  return to_capi_status(result);
+}
+
+US3_EXTERN us3_status_t us3_get_status_line(us3_handle_t handle, const char** status_line) {
+  // Sanity check arguments.
+  if (!is_valid_handle(handle)) {
+    return US3_INVALID_HANDLE;
+  }
+  if (status_line == NULL) {
+    return US3_INVALID_ARGUMENT;
+  }
+
+  us3::result_t<const char*> result = handle->connection.get_status_line();
+  *status_line = *result;
+  return to_capi_status(result);
+}
+
+US3_EXTERN us3_status_t us3_get_response_field(us3_handle_t handle,
+                                               const char* name,
+                                               const char** value) {
+  // Sanity check arguments.
+  if (!is_valid_handle(handle)) {
+    return US3_INVALID_HANDLE;
+  }
+  if (name == NULL) {
+    return US3_INVALID_ARGUMENT;
+  }
+  if (value == NULL) {
+    return US3_INVALID_ARGUMENT;
+  }
+
+  us3::result_t<const char*> result = handle->connection.get_response_field(name);
+  *value = *result;
+  return to_capi_status(result);
+}
+
+US3_EXTERN us3_status_t us3_get_content_length(us3_handle_t handle, size_t* content_length) {
+  // Sanity check arguments.
+  if (!is_valid_handle(handle)) {
+    return US3_INVALID_HANDLE;
+  }
+  if (content_length == NULL) {
+    return US3_INVALID_ARGUMENT;
+  }
+
+  us3::result_t<size_t> result = handle->connection.get_content_length();
+  *content_length = *result;
   return to_capi_status(result);
 }

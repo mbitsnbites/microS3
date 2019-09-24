@@ -37,7 +37,8 @@ public:
     REFUSED,            ///< The connection was refused.
     UNREACHABLE,        ///< The network is unreachable.
     CONNECTION_RESET,   ///< The connection was reset by the peer.
-    TIMEOUT             ///< The operation timed out.
+    TIMEOUT,            ///< The operation timed out.
+    NO_SUCH_FIELD       ///< The requested field was not found.
   };
 
   explicit status_t(const status_enum_t s) : m_status(s) {

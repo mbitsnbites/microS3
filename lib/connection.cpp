@@ -269,6 +269,37 @@ result_t<size_t> connection_t::write(const void* buf, const size_t count) {
   return net::send(m_socket, buf, count);
 }
 
+result_t<const char*> connection_t::get_status_line() {
+  if (m_mode == NONE) {
+    return make_result<const char*>(NULL, status_t::INVALID_OPERATION);
+  }
+  return make_result(m_status_line.c_str(), status_t::SUCCESS);
+}
+
+result_t<const char*> connection_t::get_response_field(const char* name) {
+  if (m_mode == NONE) {
+    return make_result<const char*>(NULL, status_t::INVALID_OPERATION);
+  }
+
+  // Look up the field among the response fields.
+  std::map<std::string, std::string>::const_iterator field = m_response_fields.find(name);
+  if (field == m_response_fields.end()) {
+    return make_result<const char*>(NULL, status_t::NO_SUCH_FIELD);
+  }
+
+  return make_result(field->second.c_str(), status_t::SUCCESS);
+}
+
+result_t<size_t> connection_t::get_content_length() {
+  if (m_mode == NONE) {
+    return make_result<size_t>(0, status_t::INVALID_OPERATION);
+  }
+  if (!m_has_content_length) {
+    return make_result<size_t>(0, status_t::NO_SUCH_FIELD);
+  }
+  return make_result(m_content_length, status_t::SUCCESS);
+}
+
 status_t connection_t::read_http_response() {
   m_status_line.clear();
   m_content_length = 0;
