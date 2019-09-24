@@ -20,6 +20,7 @@
 #include "connection.hpp"
 
 #include "sha1_hmac.hpp"
+#include <algorithm>
 #include <cctype>
 #include <clocale>
 #include <cstdlib>
@@ -238,26 +239,31 @@ result_t<size_t> connection_t::read(void* buf, const size_t count) {
   }
 
   char* target = reinterpret_cast<char*>(buf);
-  size_t bytes_left = count;
+  size_t bytes_left = std::min(count, m_content_left);
+  size_t actual_count = 0;
 
   // If we have leftovers in the internal buffer we start by copying them.
-  const size_t bytes_from_buffer = bytes_left < m_buffer_size ? bytes_left : m_buffer_size;
+  const size_t bytes_from_buffer = std::min(bytes_left, m_buffer_size);
   if (bytes_from_buffer > 0) {
     std::memcpy(target, &m_buffer[m_buffer_pos], bytes_from_buffer);
     m_buffer_pos += bytes_from_buffer;
     m_buffer_size -= bytes_from_buffer;
     target += bytes_from_buffer;
     bytes_left -= bytes_from_buffer;
-  }
-  if (bytes_left == 0) {
-    return make_result(count, status_t::SUCCESS);
+    actual_count += bytes_from_buffer;
   }
 
   // Retrieve the rest of the bytes from the socket.
-  result_t<size_t> bytes_from_socket = net::recv(m_socket, target, bytes_left);
+  status_t::status_enum_t status = status_t::SUCCESS;
+  if (bytes_left > 0) {
+    result_t<size_t> bytes_from_socket = net::recv(m_socket, target, bytes_left);
+    actual_count += *bytes_from_socket;
+    status = bytes_from_socket.status();
+  }
 
-  const size_t actual_count = bytes_from_buffer + *bytes_from_socket;
-  return make_result(actual_count, bytes_from_socket.status());
+  m_content_left -= actual_count;
+
+  return make_result(actual_count, status);
 }
 
 result_t<size_t> connection_t::write(const void* buf, const size_t count) {
@@ -367,6 +373,7 @@ status_t connection_t::read_http_response() {
     if (field != m_response_fields.end()) {
       const long int x = std::strtol(field->second.c_str(), NULL, 10);
       m_content_length = static_cast<size_t>(x);
+      m_content_left = m_content_length;
       m_has_content_length = true;
     }
   }

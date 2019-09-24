@@ -43,6 +43,7 @@ public:
         m_buffer_pos(0),
         m_buffer_size(0),
         m_content_length(0),
+        m_content_left(0),
         m_has_content_length(false) {
   }
 
@@ -90,6 +91,7 @@ private:
   std::string m_status_line;
   std::map<std::string, std::string> m_response_fields;
   size_t m_content_length;
+  size_t m_content_left;
   bool m_has_content_length;
 
   status_t read_http_response();
