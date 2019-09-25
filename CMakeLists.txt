@@ -17,7 +17,7 @@
 #  3. This notice may not be removed or altered from any source distribution.
 ###################################################################################################
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.4)
 project(microS3)
 
 enable_testing()
