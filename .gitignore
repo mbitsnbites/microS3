@@ -1,7 +1,11 @@
-# QtCreator generates this file
-CMakeLists.txt.user
-
 # Ignore build folders
 build*
 out*
+
+# QtCreator generates this file
+CMakeLists.txt.user
+
+# Visual Studio generates some files and folders
+CMakeSettings.json
+.vs
 
