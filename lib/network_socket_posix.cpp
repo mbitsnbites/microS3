@@ -37,7 +37,6 @@ struct socket_struct_t {
 namespace {
 
 status_t::status_enum_t errno_to_status() {
-  status_t::status_enum_t err;
   switch (errno) {
     case EACCES:
       return status_t::DENIED;

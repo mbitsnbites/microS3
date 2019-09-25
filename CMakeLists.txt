@@ -25,6 +25,12 @@ enable_testing()
 # The us3 library.
 add_subdirectory(lib)
 
+if(MINGW)
+  # For ease of deployment, statically link the standard libraries when using MinGW.
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -static-libgcc")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libgcc -static-libstdc++")
+endif()
+
 # Tools.
 add_subdirectory(tools)
 

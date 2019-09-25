@@ -42,7 +42,8 @@ if(WIN32 OR MINGW)
     sha1_hmac_win32.cpp
     network_socket_win32.cpp)
   list(APPEND US3_LIBS
-    userenv)
+    userenv
+    ws2_32)
 elseif(APPLE)
   list(APPEND US3_SOURCES
     sha1_hmac_macos.cpp
