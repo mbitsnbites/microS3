@@ -124,7 +124,7 @@ header_field_t parse_header_field(const std::string& line) {
   // Extract the field name and turn it into lowercase.
   std::string name(line.c_str(), colon_pos);
   for (std::string::iterator it = name.begin(); it != name.end(); it++) {
-    unsigned char c = *it;
+    unsigned char c = static_cast<unsigned char>(*it);
     if (c >= static_cast<unsigned char>('A') && c <= static_cast<unsigned char>('Z')) {
       *it = *it - ('Z' - 'z');
     }
@@ -180,55 +180,10 @@ status_t connection_t::open(const char* host_name,
   m_mode = mode;
   m_socket = *socket;
 
-  if (mode == WRITE) {
-    // Determine how to write data.
-    if (size > 0) {
-      m_has_content_length = true;
-      m_content_length = size;
-      m_content_left = size;
-      m_is_chunked = false;
-    } else {
-      m_has_content_length = false;
-      m_is_chunked = true;
-    }
-  } else {
-    m_has_content_length = false;
-    m_is_chunked = false;
-  }
-
-  // Gather information for the HTTP request.
-  const std::string http_method = mode_to_http_method(mode);
-  const std::string content_type = "application/octet-stream";
-  const std::string date_formatted = get_date_rfc2616_gmt();
-  const std::string relative_path = std::string(path);
-
-  // Generate a signature based on the request info and the S3 secret key.
-  const std::string string_to_sign =
-      http_method + "\n\n" + content_type + "\n" + date_formatted + "\n" + relative_path;
-  const result_t<sha1_hmac_t> digest = sha1_hmac(secret_key, string_to_sign.c_str());
-  if (digest.is_error()) {
-    return make_result(digest.status());
-  }
-  const std::string signature = std::string(digest->c_str());
-
-  // Construct the HTTP request header.
-  std::ostringstream http_header;
-  http_header << http_method << " " << path << " HTTP/1.1";
-  http_header << "\r\nHost: " << host_name;
-  http_header << "\r\nContent-Type: " << content_type;
-  http_header << "\r\nDate: " << date_formatted;
-  http_header << "\r\nAuthorization: AWS " << access_key << ":" << signature;
-  if (m_has_content_length) {
-    http_header << "\r\nContent-Length: " << m_content_length;
-  }
-  http_header << "\r\n\r\n";
-
-  // Send the HTTP header.
-  {
-    status_t header_send_status = send_string(m_socket, http_header.str());
-    if (header_send_status.is_error()) {
-      return make_result(header_send_status.status());
-    }
+  // Send the HTTP headers.
+  const status_t headers_result = send_http_headers(host_name, path, access_key, secret_key, size);
+  if (headers_result.is_error()) {
+    return headers_result;
   }
 
   // If we're done sending data (i.e. we're in READ mode), read the HTTP response now. Otherwise
@@ -313,13 +268,16 @@ result_t<size_t> connection_t::write(const void* buf, const size_t count) {
 
   // Send the buffer over the socket.
   result_t<size_t> actual_count = net::send(m_socket, buf, count);
-  if (actual_count.is_success()) {
+  if (m_has_content_length && actual_count.is_success()) {
     m_content_left -= *actual_count;
   }
 
   // If we're done writing data, now is a good time to read the HTTP response.
-  if (m_content_left == 0) {
-    read_http_response();
+  if (m_has_content_length && m_content_left == 0) {
+    const status_t response_result = read_http_response();
+    if (response_result.is_error()) {
+      return make_result(*actual_count, response_result.status());
+    }
   }
 
   return actual_count;
@@ -354,6 +312,82 @@ result_t<size_t> connection_t::get_content_length() {
     return make_result<size_t>(0, status_t::NO_SUCH_FIELD);
   }
   return make_result(m_content_length, status_t::SUCCESS);
+}
+
+status_t connection_t::send_http_headers(const char* host_name,
+                                         const char* path,
+                                         const char* access_key,
+                                         const char* secret_key,
+                                         const size_t size) {
+  if (m_mode == WRITE) {
+    // Determine how to write data.
+    if (size > 0) {
+      m_has_content_length = true;
+      m_content_length = size;
+      m_content_left = size;
+      m_is_chunked = false;
+    } else {
+      m_has_content_length = false;
+      m_is_chunked = true;
+    }
+  } else {
+    m_has_content_length = false;
+    m_is_chunked = false;
+  }
+
+  // Gather information for the HTTP request.
+  const std::string http_method = mode_to_http_method(m_mode);
+  const std::string content_type = "application/octet-stream";
+  const std::string date_formatted = get_date_rfc2616_gmt();
+  const std::string relative_path = std::string(path);
+
+  // Generate a signature based on the request info and the S3 secret key.
+  const std::string string_to_sign =
+      http_method + "\n\n" + content_type + "\n" + date_formatted + "\n" + relative_path;
+  const result_t<sha1_hmac_t> digest = sha1_hmac(secret_key, string_to_sign.c_str());
+  if (digest.is_error()) {
+    return make_result(digest.status());
+  }
+  const std::string signature = std::string(digest->c_str());
+
+  // Construct the HTTP request header.
+  std::ostringstream http_header;
+  http_header << http_method << " " << path << " HTTP/1.1";
+  http_header << "\r\nHost: " << host_name;
+  http_header << "\r\nContent-Type: " << content_type;
+  http_header << "\r\nDate: " << date_formatted;
+  http_header << "\r\nAuthorization: AWS " << access_key << ":" << signature;
+  if (m_has_content_length) {
+    http_header << "\r\nContent-Length: " << m_content_length;
+  }
+  http_header << "\r\n\r\n";
+
+  // Send the HTTP header.
+  {
+    status_t header_send_status = send_string(m_socket, http_header.str());
+    if (header_send_status.is_error()) {
+      return make_result(header_send_status.status());
+    }
+  }
+
+  return make_result(status_t::SUCCESS);
+}
+
+status_t connection_t::read_data_to_buffer() {
+  // End of buffer reached?
+  if (m_buffer_pos == MAX_BUFFER_SIZE) {
+    m_buffer_pos = 0;
+  }
+
+  // Try to read enough data to fill the buffer.
+  const size_t bytes_to_read = MAX_BUFFER_SIZE - (m_buffer_pos + m_buffer_size);
+  result_t<size_t> result = net::recv(m_socket, &m_buffer[m_buffer_pos], bytes_to_read);
+  if (result.is_error()) {
+    return make_result(result.status());
+  }
+  m_buffer_size += *result;
+
+  return make_result(status_t::SUCCESS);
 }
 
 status_t connection_t::read_http_response() {
@@ -453,23 +487,6 @@ status_t connection_t::read_http_response() {
   // TODO(m): Check the HTTP status code (should be "HTTP/1.1 200 OK").
 
   return make_result(m_have_http_response ? status_t::SUCCESS : status_t::ERROR);
-}
-
-status_t connection_t::read_data_to_buffer() {
-  // End of buffer reached?
-  if (m_buffer_pos == MAX_BUFFER_SIZE) {
-    m_buffer_pos = 0;
-  }
-
-  // Try to read enough data to fill the buffer.
-  const size_t bytes_to_read = MAX_BUFFER_SIZE - (m_buffer_pos + m_buffer_size);
-  result_t<size_t> result = net::recv(m_socket, &m_buffer[m_buffer_pos], bytes_to_read);
-  if (result.is_error()) {
-    return make_result(result.status());
-  }
-  m_buffer_size += *result;
-
-  return make_result(status_t::SUCCESS);
 }
 
 }  // namespace us3

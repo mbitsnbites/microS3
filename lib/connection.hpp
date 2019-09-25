@@ -55,6 +55,23 @@ public:
     }
   }
 
+  /**
+   * @brief Open the connection.
+   *
+   * This method opens a connection to the specified host and initiates S3 authentication by sending
+   * the apropriate HTTP message headers. If this is a READ request, the HTTP response is also read.
+   *
+   * @param host_name Name of the host.
+   * @param port Port to connection to.
+   * @param path Full path to the object (including the leading slash).
+   * @param access_key The S3 access key.
+   * @param secret_key The S3 secret key.
+   * @param mode Stream mode.
+   * @param size Number of bytes to send (ignored for READ connections).
+   * @param connect_timeout Connection timeout in μs, or 0 for no timeout.
+   * @param socket_timeout Socket timeout in μs, or 0 for no timeout
+   * @returns status_t::SUCCESS for success, otherwise an error code.
+   */
   status_t open(const char* host_name,
                 const int port,
                 const char* path,
@@ -65,22 +82,61 @@ public:
                 const net::timeout_t connect_timeout,
                 const net::timeout_t socket_timeout);
 
+  /**
+   * @brief Close the connection.
+   * @returns status_t::SUCCESS for success, otherwise an error code.
+   */
   status_t close();
 
+  /**
+   * @brief Read data from the stream.
+   * @param buf The buffer to read to.
+   * @param count The number of bytes to read.
+   * @returns the actual number of bytes read. The actual count may be less than @c count. If the
+   * return value is zero, the end of the stream was reached.
+   */
   result_t<size_t> read(void* buf, const size_t count);
 
+  /**
+   * @brief Write data to the stream.
+   * @param buf The buffer to write from.
+   * @param count The number of bytes to write.
+   * @returns the actual number of bytes written. The actual count may be less than @c count.
+   */
   result_t<size_t> write(const void* buf, const size_t count);
 
-  bool is_connected() const {
-    return m_mode != NONE;
-  }
-
+  /**
+   * @brief Get the status line from the HTTP response.
+   * @note The HTTP response must have been received before using this function.
+   */
   result_t<const char*> get_status_line();
+
+  /**
+   * @brief Get a HTTP response field.
+   * @param name Name of the field (must be lower case).
+   * @returns the value of the response field, or status_t::NO_SUCH_FIELD if the field was not part
+   * of the response.
+   * @note The HTTP response must have been received before using this function.
+   */
   result_t<const char*> get_response_field(const char* name);
+
+  /**
+   * @brief Get the content length of the HTTP message.
+   * @returns the size of the message content, in bytes.
+   * @note The HTTP response must have been received before using this function.
+   */
   result_t<size_t> get_content_length();
 
 private:
   static const size_t MAX_BUFFER_SIZE = 1024;
+
+  status_t send_http_headers(const char *host_name,
+                             const char* path,
+                             const char* access_key,
+                             const char* secret_key,
+                             const size_t size);
+  status_t read_data_to_buffer();
+  status_t read_http_response();
 
   mode_t m_mode;
   net::socket_t m_socket;
@@ -98,9 +154,6 @@ private:
   size_t m_content_left;
   bool m_has_content_length;
   bool m_is_chunked;
-
-  status_t read_http_response();
-  status_t read_data_to_buffer();
 };
 
 }  // namespace us3
