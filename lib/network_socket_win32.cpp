@@ -19,8 +19,6 @@
 
 #include "network_socket.hpp"
 
-#undef _WIN32_WINNT
-#define _WIN32_WINNT 0x0600 /* To get WSAPoll etc. */
 #include <cstddef>
 #include <cstdio>
 #include <winsock2.h>
@@ -36,6 +34,12 @@ struct socket_struct_t {
 };
 
 namespace {
+
+#if __cplusplus >= 201103L
+const socket_t NULL_SOCKET_T(nullptr);
+#else
+const socket_t NULL_SOCKET_T(NULL);
+#endif
 
 status_t::status_enum_t wsa_error_to_status(const int err) {
   switch (err) {
@@ -73,7 +77,7 @@ result_t<socket_t> connect(const char* host,
     char port_str[30];
     std::sprintf(&port_str[0], "%d", port);
     if (::getaddrinfo(host, port_str, &hints, &info) != 0) {
-      return make_result(static_cast<socket_struct_t*>(0), status_t::NO_HOST);
+      return make_result(NULL_SOCKET_T, status_t::NO_HOST);
     }
   }
 
@@ -81,15 +85,15 @@ result_t<socket_t> connect(const char* host,
   const SOCKET socket_handle = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
   if (socket_handle == INVALID_SOCKET) {
     ::freeaddrinfo(info);
-    return make_result(static_cast<socket_struct_t*>(0), wsa_error_to_status());
+    return make_result(NULL_SOCKET_T, wsa_error_to_status());
   }
 
   // Connect to the host.
   // TODO(m): Implement timeout. See e.g. https://stackoverflow.com/a/2597774/5778708
-  if (::connect(socket_handle, info->ai_addr, info->ai_addrlen) == -1) {
+  if (::connect(socket_handle, info->ai_addr, static_cast<int>(info->ai_addrlen)) == -1) {
     ::closesocket(socket_handle);
     ::freeaddrinfo(info);
-    return make_result(static_cast<socket_struct_t*>(0), wsa_error_to_status());
+    return make_result(NULL_SOCKET_T, wsa_error_to_status());
   }
 
   // Return the socket handle.

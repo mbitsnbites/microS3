@@ -184,7 +184,7 @@ int main(const int argc, const char** argv) {
     if (us3_get_status_line(s3_handle, &status_line) == US3_SUCCESS) {
       fprintf(stderr, "Status: %s\n", status_line);
     }
-    fprintf(stderr, "Content length: %ld\n", file_size);
+    fprintf(stderr, "Content length: %lu\n", (unsigned long)file_size);
   }
 
   /* Close the handles. */

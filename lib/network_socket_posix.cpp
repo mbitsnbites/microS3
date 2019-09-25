@@ -36,6 +36,12 @@ struct socket_struct_t {
 
 namespace {
 
+#if __cplusplus >= 201103L
+const socket_t NULL_SOCKET_T(nullptr);
+#else
+const socket_t NULL_SOCKET_T(NULL);
+#endif
+
 status_t::status_enum_t errno_to_status() {
   switch (errno) {
     case EACCES:
@@ -68,7 +74,7 @@ result_t<socket_t> connect(const char* host,
     char port_str[30];
     std::sprintf(&port_str[0], "%d", port);
     if (::getaddrinfo(host, port_str, &hints, &info) != 0) {
-      return make_result(static_cast<socket_struct_t*>(0), status_t::NO_HOST);
+      return make_result(NULL_SOCKET_T, status_t::NO_HOST);
     }
   }
 
@@ -76,7 +82,7 @@ result_t<socket_t> connect(const char* host,
   const int socket_fd = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
   if (socket_fd == -1) {
     ::freeaddrinfo(info);
-    return make_result(static_cast<socket_struct_t*>(0), errno_to_status());
+    return make_result(NULL_SOCKET_T, errno_to_status());
   }
 
   // Connect to the host.
@@ -84,7 +90,7 @@ result_t<socket_t> connect(const char* host,
   if (::connect(socket_fd, info->ai_addr, info->ai_addrlen) == -1) {
     ::close(socket_fd);
     ::freeaddrinfo(info);
-    return make_result(static_cast<socket_struct_t*>(0), errno_to_status());
+    return make_result(NULL_SOCKET_T, errno_to_status());
   }
 
   // Return the socket handle.

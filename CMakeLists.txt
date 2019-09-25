@@ -22,14 +22,19 @@ project(microS3)
 
 enable_testing()
 
-# The us3 library.
-add_subdirectory(lib)
-
 if(MINGW)
   # For ease of deployment, statically link the standard libraries when using MinGW.
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -static-libgcc")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libgcc -static-libstdc++")
 endif()
+
+if(MSVC)
+  # Avoid CRT secure warnings when using MSVC.
+  add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+endif()
+
+# The us3 library.
+add_subdirectory(lib)
 
 # Tools.
 add_subdirectory(tools)

@@ -134,7 +134,7 @@ int main(const int argc, const char** argv) {
       fprintf(stderr, "Content type: %s\n", content_type);
     }
     if (us3_get_content_length(s3_handle, &content_length) == US3_SUCCESS) {
-      fprintf(stderr, "Content length: %ld\n", content_length);
+      fprintf(stderr, "Content length: %lu\n", (unsigned long)content_length);
     }
   }
 
