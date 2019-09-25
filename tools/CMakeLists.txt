@@ -27,3 +27,7 @@ target_link_libraries(us3get us3)
 
 add_executable(us3put us3put.c)
 target_link_libraries(us3put us3)
+
+install(
+  TARGETS us3get us3put
+  RUNTIME DESTINATION bin)

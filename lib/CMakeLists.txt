@@ -57,6 +57,16 @@ else()
     ${OPENSSL_CRYPTO_LIBRARIES})
 endif()
 
+set(US3_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
+
 add_library(us3 ${US3_SOURCES})
 target_link_libraries(us3 PRIVATE ${US3_LIBS})
-target_include_directories(us3 PUBLIC ${PROJECT_SOURCE_DIR}/include)
+target_include_directories(us3 PUBLIC ${US3_INCLUDE_DIR})
+
+install(
+  TARGETS us3
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib)
+install(
+  DIRECTORY ${US3_INCLUDE_DIR}/us3
+  DESTINATION include)

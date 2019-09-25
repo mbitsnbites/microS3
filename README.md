@@ -1,6 +1,6 @@
 # microS3
 
-microS3 (μS3 for short) is a small client library for interacting with S3 object storage services.
+microS3 (μS3 for short) is a small, portable client library for interacting with S3 object storage services.
 
 It is designed to work even on restricted machines, such as embedded devices.
 
@@ -14,12 +14,24 @@ The library is released under the very liberal [zlib/libpbg license](https://ope
 
 ## Building
 
-Use [CMake](https://cmake.org/) to build the library and tools. For example:
+Use [CMake](https://cmake.org/) to build the library and the tools. For example:
 
 ```bash
 $ mkdir build && cd build
-$ cmake ../
-$ cmake --build .
+$ cmake -G Ninja ../
+$ ninja
+```
+
+To install the library and the tools, do:
+
+```bash
+$ sudo ninja install
+```
+
+To run the unit tests, do:
+
+```bash
+$ ctest --output-on-failure
 ```
 
 ## Quick start
@@ -29,17 +41,24 @@ You can easily test microS3 against an S3 server with the `us3get` and `us3put` 
 ```bash
 $ mkdir -p /tmp/s3/mybucket
 $ echo "Hello world!" > /tmp/s3/mybucket/hello.txt
-$ docker run --rm -p 9000:9000 \
+$ docker run --rm -d -p 9000:9000 \
+    --name s3server \
     -e "MINIO_ACCESS_KEY=myAccessKey" \
     -e "MINIO_SECRET_KEY=SuperSECR3TkEY" \
     -v /tmp/s3:/data \
-    minio/minio server /data &
+    minio/minio server /data
 $ tools/us3get \
     -a myAccessKey \
     -s SuperSECR3TkEY \
     http://localhost:9000/mybucket/hello.txt \
     /tmp/downloaded-hello.txt
 $ cat /tmp/downloaded-hello.txt
+```
+
+You can stop the S3 service container with:
+
+```bash
+$ docker stop s3server
 ```
 
 ## Example usage
