@@ -27,12 +27,12 @@ $ cmake --build .
 You can easily test microS3 against an S3 server with the `us3get` and `us3put` tools. For example, start a [MinIO](https://min.io/) server using [Docker](https://www.docker.com/) and download a file using `us3get`:
 
 ```bash
-$ mkdir -p /tmp/myminio/mybucket
-$ echo "Hello world!" > /tmp/myminio/mybucket/hello.txt
+$ mkdir -p /tmp/s3/mybucket
+$ echo "Hello world!" > /tmp/s3/mybucket/hello.txt
 $ docker run --rm -p 9000:9000 \
     -e "MINIO_ACCESS_KEY=myAccessKey" \
     -e "MINIO_SECRET_KEY=SuperSECR3TkEY" \
-    -v /tmp/myminio:/data \
+    -v /tmp/s3:/data \
     minio/minio server /data &
 $ tools/us3get \
     -a myAccessKey \
