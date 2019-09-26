@@ -72,7 +72,9 @@ typedef enum {
   US3_CONNECTION_RESET = 10, /**< The connection was reset by the peer. */
   US3_TIMEOUT = 11,          /**< The operation timed out. */
   US3_UNSUPPORTED = 12,      /**< An unsupported protocol function was encountered. */
-  US3_NO_SUCH_FIELD = 13     /**< The requested field was not found. */
+  US3_NO_SUCH_FIELD = 13,    /**< The requested field was not found. */
+  US3_FORBIDDEN = 14,        /**< The server refused to authorize the request. */
+  US3_NOT_FOUND =15          /**< The object was not found. */
 } us3_status_t;
 
 /** @brief Stream mode. */

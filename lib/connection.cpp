@@ -484,9 +484,22 @@ status_t connection_t::read_http_response() {
     }
   }
 
-  // TODO(m): Check the HTTP status code (should be "HTTP/1.1 200 OK").
-
-  return make_result(m_have_http_response ? status_t::SUCCESS : status_t::ERROR);
+  // Check the HTTP status code (should be "HTTP/1.1 200 OK").
+  if (std::strncmp(m_status_line.c_str(), "HTTP/1.1 ", 9) != 0) {
+    return make_result(status_t::UNSUPPORTED);
+  }
+  const int status_code = (static_cast<int>(m_status_line[9] - '0') * 100) +
+                          (static_cast<int>(m_status_line[10] - '0') * 10) +
+                          static_cast<int>(m_status_line[11] - '0');
+  if (status_code == 200) {
+    return make_result(status_t::SUCCESS);
+  } else if (status_code == 403) {
+    return make_result(status_t::FORBIDDEN);
+  } else if (status_code == 404) {
+    return make_result(status_t::NOT_FOUND);
+  } else {
+    return make_result(status_t::ERROR);
+  }
 }
 
 }  // namespace us3

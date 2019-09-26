@@ -61,6 +61,10 @@ us3_status_t to_capi_status(const us3::status_t& result) {
       return US3_UNSUPPORTED;
     case us3::status_t::NO_SUCH_FIELD:
       return US3_NO_SUCH_FIELD;
+    case us3::status_t::FORBIDDEN:
+      return US3_FORBIDDEN;
+    case us3::status_t::NOT_FOUND:
+      return US3_NOT_FOUND;
     case us3::status_t::ERROR:
     default:
       return US3_ERROR;

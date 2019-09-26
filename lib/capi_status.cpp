@@ -49,6 +49,10 @@ US3_EXTERN const char* us3_status_str(const us3_status_t status) {
       return "An unsupported protocol function was encountered";
     case US3_NO_SUCH_FIELD:
       return "The requested field was not found";
+    case US3_FORBIDDEN:
+      return "The server refused to authorize the request";
+    case US3_NOT_FOUND:
+      return "The object was not found";
     default:
       return "(invalid status code)";
   }

@@ -39,7 +39,9 @@ public:
     CONNECTION_RESET,   ///< The connection was reset by the peer.
     TIMEOUT,            ///< The operation timed out.
     UNSUPPORTED,        ///< An unsupported protocol function was encountered.
-    NO_SUCH_FIELD       ///< The requested field was not found.
+    NO_SUCH_FIELD,      ///< The requested field was not found.
+    FORBIDDEN,          ///< The server refused to authorize the request.
+    NOT_FOUND           ///< The object was not found.
   };
 
   explicit status_t(const status_enum_t s) : m_status(s) {
