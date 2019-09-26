@@ -1,4 +1,4 @@
-# microS3
+# microS3 [![Build Status](https://travis-ci.org/mbitsnbites/microS3.svg?branch=master)](https://travis-ci.org/mbitsnbites/microS3)
 
 microS3 (μS3 for short) is a small, portable client library for interacting with S3 object storage services.
 
