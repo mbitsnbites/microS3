@@ -41,6 +41,20 @@ const socket_t NULL_SOCKET_T(nullptr);
 const socket_t NULL_SOCKET_T(NULL);
 #endif
 
+bool s_wsa_initialized = false;
+
+bool wsa_initialize() {
+  if (s_wsa_initialized) {
+    return true;
+  }
+  WSADATA wsaData;
+  if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+    return false;
+  }
+  s_wsa_initialized = true;
+  return true;
+}
+
 status_t::status_enum_t wsa_error_to_status(const int err) {
   switch (err) {
     case WSAEACCES:
@@ -68,6 +82,10 @@ result_t<socket_t> connect(const char* host,
                            const int port,
                            const timeout_t connect_timeout,
                            const timeout_t socket_timeout) {
+  if (!wsa_initialize()) {
+    return make_result(NULL_SOCKET_T, status_t::ERROR);
+  }
+
   // Get address info for the host / port.
   ::addrinfo* info;
   {
