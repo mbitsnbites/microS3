@@ -17,6 +17,20 @@ It is implemented in C++03 and exposes a C89 API. It has no external dependencie
 
 The library is released under the very liberal [zlib/libpbg license](https://opensource.org/licenses/Zlib).
 
+## Known limitations
+
+As an S3 client library, microS3 is not feature complete. This is by design, since the primary goal is to provide basic S3 I/O capabilities to C/C++ tools and applications that just need to consume or produce data blobs.
+
+* S3 limitations:
+  * Only a small subset of the S3 protocol is supported (GET Object, PUT Object).
+  * Functionality for listing or deleting objects and buckets is missing.
+* HTTP limitations:
+  * Only basic HTTP support (e.g. [redirection](https://developer.mozilla.org/en-US/docs/Web/HTTP/Redirections), [basic authentication](https://en.wikipedia.org/wiki/Basic_access_authentication) and [chunked transfers](https://en.wikipedia.org/wiki/Chunked_transfer_encoding) are unsupported).
+  * No HTTPS support.
+* Also see the [project issues](https://github.com/mbitsnbites/microS3/issues).
+
+Missing features will be added to the library when the need arises.
+
 ## Building
 
 Use [CMake](https://cmake.org/) to build the library and the tools. For example:
@@ -112,4 +126,5 @@ int main(void) {
 
   /* Close the S3 stream. */
   us3_close(handle);
-}```
+}
+```
