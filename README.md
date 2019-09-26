@@ -1,5 +1,16 @@
 # microS3 [![Build Status](https://travis-ci.org/mbitsnbites/microS3.svg?branch=master)](https://travis-ci.org/mbitsnbites/microS3)
 
+* [About](#about)
+  * [Architecture](#architecture)
+  * [License](#license)
+  * [Known limitations](#known-limitations)
+* [Usage](#usage)
+  * [Building](#building)
+  * [Quick start](#quick-start)
+  * [Example usage](#example-usage)
+
+# About
+
 microS3 (μS3 for short) is a small, portable client library for interacting with S3 object storage services.
 
 Supported platforms:
@@ -30,6 +41,8 @@ As an S3 client library, microS3 is not feature complete. This is by design, sin
 * Also see the [project issues](https://github.com/mbitsnbites/microS3/issues).
 
 Missing features will be added to the library when the need arises.
+
+# Usage
 
 ## Building
 
