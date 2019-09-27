@@ -19,7 +19,7 @@
 
 #include <us3/us3.h>
 
-US3_EXTERN const char* us3_status_str(const us3_status_t status) {
+US3_API const char* us3_status_str(const us3_status_t status) {
   switch (status) {
     case US3_SUCCESS:
       return "No error occurred";

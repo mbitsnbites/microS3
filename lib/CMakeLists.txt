@@ -70,9 +70,19 @@ endif()
 
 set(US3_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
 
+# Create the library target.
 add_library(us3 ${US3_SOURCES})
 target_link_libraries(us3 PRIVATE ${US3_LIBS})
 target_include_directories(us3 PUBLIC ${US3_INCLUDE_DIR})
+target_compile_definitions(us3 PRIVATE US3_BUILDING_LIBRARY)
+set_target_properties(us3 PROPERTIES C_VISIBILITY_PRESET hidden)
+set_target_properties(us3 PROPERTIES CXX_VISIBILITY_PRESET hidden)
+
+# Are we building a shared library?
+get_target_property(_us3_library_type us3 TYPE)
+if(_us3_library_type STREQUAL "SHARED_LIBRARY")
+  target_compile_definitions(us3 PUBLIC US3_SHARED_LIB)
+endif()
 
 install(
   TARGETS us3

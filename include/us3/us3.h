@@ -22,10 +22,28 @@
 
 #include <stddef.h> /* For size_t */
 
-#ifdef __cplusplus
-#define US3_EXTERN extern "C"
+#if defined(US3_SHARED_LIB)
+# if defined(US3_BUILDING_LIBRARY)
+#  if defined(_MSC_VER)
+#   define US3_API_VISIBILITY __declspec(dllexport)
+#  else
+#   define US3_API_VISIBILITY __attribute__((visibility("default")))
+#  endif
+# else
+#  if defined(_MSC_VER)
+#   define US3_API_VISIBILITY __declspec(dllimport)
+#  else
+#   define US3_API_VISIBILITY
+#  endif
+# endif
 #else
-#define US3_EXTERN
+# define US3_API_VISIBILITY
+#endif
+
+#ifdef __cplusplus
+# define US3_API extern "C" US3_API_VISIBILITY
+#else
+# define US3_API US3_API_VISIBILITY
 #endif
 
 /**
@@ -74,7 +92,7 @@ typedef enum {
   US3_UNSUPPORTED = 12,      /**< An unsupported protocol function was encountered. */
   US3_NO_SUCH_FIELD = 13,    /**< The requested field was not found. */
   US3_FORBIDDEN = 14,        /**< The server refused to authorize the request. */
-  US3_NOT_FOUND =15          /**< The object was not found. */
+  US3_NOT_FOUND = 15         /**< The object was not found. */
 } us3_status_t;
 
 /** @brief Stream mode. */
@@ -98,7 +116,7 @@ typedef long us3_microseconds_t;
  * @param status The status code.
  * @returns a string that describes the status code.
  */
-US3_EXTERN const char* us3_status_str(const us3_status_t status);
+US3_API const char* us3_status_str(const us3_status_t status);
 
 /**
  * @brief Open an S3 stream.
@@ -112,21 +130,21 @@ US3_EXTERN const char* us3_status_str(const us3_status_t status);
  * @param[out] handle The resulting handle.
  * @returns US3_SUCCESS on success, otherwise an error code.
  */
-US3_EXTERN us3_status_t us3_open(const char* url,
-                                 const char* access_key,
-                                 const char* secret_key,
-                                 const us3_mode_t mode,
-                                 const size_t size,
-                                 const us3_microseconds_t connect_timeout,
-                                 const us3_microseconds_t socket_timeout,
-                                 us3_handle_t* handle);
+US3_API us3_status_t us3_open(const char* url,
+                              const char* access_key,
+                              const char* secret_key,
+                              const us3_mode_t mode,
+                              const size_t size,
+                              const us3_microseconds_t connect_timeout,
+                              const us3_microseconds_t socket_timeout,
+                              us3_handle_t* handle);
 
 /**
  * @brief Close an S3 stream.
  * @param handle The stream handle to close.
  * @returns US3_SUCCESS on success, otherwise an error code.
  */
-US3_EXTERN us3_status_t us3_close(us3_handle_t handle);
+US3_API us3_status_t us3_close(us3_handle_t handle);
 
 /**
  * @brief Read data from an S3 stream.
@@ -136,10 +154,10 @@ US3_EXTERN us3_status_t us3_close(us3_handle_t handle);
  * @param[out] actual_count The actual number of bytes read.
  * @returns US3_SUCCESS on success, otherwise an error code.
  */
-US3_EXTERN us3_status_t us3_read(us3_handle_t handle,
-                                 void* buf,
-                                 const size_t count,
-                                 size_t* actual_count);
+US3_API us3_status_t us3_read(us3_handle_t handle,
+                              void* buf,
+                              const size_t count,
+                              size_t* actual_count);
 
 /**
  * @brief Write data to an S3 stream.
@@ -149,10 +167,10 @@ US3_EXTERN us3_status_t us3_read(us3_handle_t handle,
  * @param[out] actual_count The actual number of bytes written.
  * @returns US3_SUCCESS on success, otherwise an error code.
  */
-US3_EXTERN us3_status_t us3_write(us3_handle_t handle,
-                                  const void* buf,
-                                  const size_t count,
-                                  size_t* actual_count);
+US3_API us3_status_t us3_write(us3_handle_t handle,
+                               const void* buf,
+                               const size_t count,
+                               size_t* actual_count);
 
 /**
  * @brief Get the HTTP response status line.
@@ -160,7 +178,7 @@ US3_EXTERN us3_status_t us3_write(us3_handle_t handle,
  * @param[out] status_line The HTTP response status line value.
  * @returns US3_SUCCESS on success, otherwise an error code.
  */
-US3_EXTERN us3_status_t us3_get_status_line(us3_handle_t handle, const char** status_line);
+US3_API us3_status_t us3_get_status_line(us3_handle_t handle, const char** status_line);
 
 /**
  * @brief Get a HTTP response field value.
@@ -170,9 +188,9 @@ US3_EXTERN us3_status_t us3_get_status_line(us3_handle_t handle, const char** st
  * @returns US3_SUCCESS on success, otherwise an error code. If the field was not given in the HTTP
  * response message, US3_NO_SUCH_FIELD is returned (and *value is set to NULL).
  */
-US3_EXTERN us3_status_t us3_get_response_field(us3_handle_t handle,
-                                               const char* name,
-                                               const char** value);
+US3_API us3_status_t us3_get_response_field(us3_handle_t handle,
+                                            const char* name,
+                                            const char** value);
 
 /**
  * @brief Get the S3 stream content length (in bytes).
@@ -181,6 +199,6 @@ US3_EXTERN us3_status_t us3_get_response_field(us3_handle_t handle,
  * @returns US3_SUCCESS on success, otherwise an error code. If the content length was not given in
  * the HTTP response message, US3_NO_SUCH_FIELD is returned (and *content_length is set to 0).
  */
-US3_EXTERN us3_status_t us3_get_content_length(us3_handle_t handle, size_t* content_length);
+US3_API us3_status_t us3_get_content_length(us3_handle_t handle, size_t* content_length);
 
 #endif /* US3_US3_H_ */
