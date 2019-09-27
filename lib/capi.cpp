@@ -82,14 +82,14 @@ us3::connection_t::mode_t to_connection_mode(const us3_mode_t mode) {
 }
 }  // namespace
 
-US3_EXTERN us3_status_t us3_open(const char* url,
-                                 const char* access_key,
-                                 const char* secret_key,
-                                 const us3_mode_t mode,
-                                 const size_t size,
-                                 const us3_microseconds_t connect_timeout,
-                                 const us3_microseconds_t socket_timeout,
-                                 us3_handle_t* handle) {
+US3_API us3_status_t us3_open(const char* url,
+                              const char* access_key,
+                              const char* secret_key,
+                              const us3_mode_t mode,
+                              const size_t size,
+                              const us3_microseconds_t connect_timeout,
+                              const us3_microseconds_t socket_timeout,
+                              us3_handle_t* handle) {
   // Sanity check arguments.
   if (url == NULL) {
     return US3_INVALID_ARGUMENT;
@@ -139,7 +139,7 @@ US3_EXTERN us3_status_t us3_open(const char* url,
   return US3_SUCCESS;
 }
 
-US3_EXTERN us3_status_t us3_close(us3_handle_t handle) {
+US3_API us3_status_t us3_close(us3_handle_t handle) {
   // Sanity check arguments.
   if (!is_valid_handle(handle)) {
     return US3_INVALID_HANDLE;
@@ -151,10 +151,10 @@ US3_EXTERN us3_status_t us3_close(us3_handle_t handle) {
   return to_capi_status(result);
 }
 
-US3_EXTERN us3_status_t us3_read(us3_handle_t handle,
-                                 void* buf,
-                                 const size_t count,
-                                 size_t* actual_count) {
+US3_API us3_status_t us3_read(us3_handle_t handle,
+                              void* buf,
+                              const size_t count,
+                              size_t* actual_count) {
   // Sanity check arguments.
   if (!is_valid_handle(handle)) {
     return US3_INVALID_HANDLE;
@@ -171,10 +171,10 @@ US3_EXTERN us3_status_t us3_read(us3_handle_t handle,
   return to_capi_status(result);
 }
 
-US3_EXTERN us3_status_t us3_write(us3_handle_t handle,
-                                  const void* buf,
-                                  const size_t count,
-                                  size_t* actual_count) {
+US3_API us3_status_t us3_write(us3_handle_t handle,
+                               const void* buf,
+                               const size_t count,
+                               size_t* actual_count) {
   // Sanity check arguments.
   if (!is_valid_handle(handle)) {
     return US3_INVALID_HANDLE;
@@ -191,7 +191,7 @@ US3_EXTERN us3_status_t us3_write(us3_handle_t handle,
   return to_capi_status(result);
 }
 
-US3_EXTERN us3_status_t us3_get_status_line(us3_handle_t handle, const char** status_line) {
+US3_API us3_status_t us3_get_status_line(us3_handle_t handle, const char** status_line) {
   // Sanity check arguments.
   if (!is_valid_handle(handle)) {
     return US3_INVALID_HANDLE;
@@ -205,9 +205,9 @@ US3_EXTERN us3_status_t us3_get_status_line(us3_handle_t handle, const char** st
   return to_capi_status(result);
 }
 
-US3_EXTERN us3_status_t us3_get_response_field(us3_handle_t handle,
-                                               const char* name,
-                                               const char** value) {
+US3_API us3_status_t us3_get_response_field(us3_handle_t handle,
+                                            const char* name,
+                                            const char** value) {
   // Sanity check arguments.
   if (!is_valid_handle(handle)) {
     return US3_INVALID_HANDLE;
@@ -224,7 +224,7 @@ US3_EXTERN us3_status_t us3_get_response_field(us3_handle_t handle,
   return to_capi_status(result);
 }
 
-US3_EXTERN us3_status_t us3_get_content_length(us3_handle_t handle, size_t* content_length) {
+US3_API us3_status_t us3_get_content_length(us3_handle_t handle, size_t* content_length) {
   // Sanity check arguments.
   if (!is_valid_handle(handle)) {
     return US3_INVALID_HANDLE;
