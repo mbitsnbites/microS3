@@ -22,7 +22,7 @@ Supported platforms:
 
 The library is designed to work even on restricted machines, such as embedded devices.
 
-It is implemented in C++03 and exposes a C89 API. It has no external dependencies except for system level functionality (network sockets and crypto).
+It is implemented in C++03 and exposes a C89 API. It has no external dependencies except for system level functionality (network sockets).
 
 ## License
 

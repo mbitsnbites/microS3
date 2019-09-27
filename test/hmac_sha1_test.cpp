@@ -52,4 +52,42 @@ TEST_CASE("Hash some strings") {
     CHECK_EQ(result.is_success(), true);
     CHECK_EQ(std::string(result->c_str()), "KM+4KvZd8CLgj6GmcSEGjB1IC8g=");
   }
+
+  SUBCASE("Short key, long data") {
+    // GIVEN
+    const char* key = "123";
+    const char* data =
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt "
+        "ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation "
+        "ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in "
+        "reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur "
+        "sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id "
+        "est laborum.";
+
+    // WHEN
+    const auto result = us3::hmac_sha1(key, data);
+
+    // THEN
+    CHECK_EQ(result.is_success(), true);
+    CHECK_EQ(std::string(result->c_str()), "SNwEVRL0T9MlxLU2mD1DonYxSt0=");
+  }
+
+  SUBCASE("Long key, short data") {
+    // GIVEN
+    const char* key =
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt "
+        "ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation "
+        "ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in "
+        "reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur "
+        "sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id "
+        "est laborum.";
+    const char* data = "123";
+
+    // WHEN
+    const auto result = us3::hmac_sha1(key, data);
+
+    // THEN
+    CHECK_EQ(result.is_success(), true);
+    CHECK_EQ(std::string(result->c_str()), "n2BDD6BL0i3/OUo+xgTNQNL5zv0=");
+  }
 }
