@@ -49,12 +49,23 @@ elseif(APPLE)
     hmac_sha1_macos.cpp
     network_socket_posix.cpp)
 else()
-  find_package(OpenSSL REQUIRED)
   list(APPEND US3_SOURCES
-    hmac_sha1_openssl.cpp
     network_socket_posix.cpp)
-  list(APPEND US3_LIBS
-    ${OPENSSL_CRYPTO_LIBRARIES})
+
+  # We use OpenSSL if it's present, otherwise we fall back to a custom implementation.
+  find_package(OpenSSL)
+  if(OPENSSL_FOUND)
+    list(APPEND US3_SOURCES
+      hmac_sha1_openssl.cpp)
+    list(APPEND US3_LIBS
+      ${OPENSSL_CRYPTO_LIBRARIES})
+  else()
+    message("Note: Using a custom HMAC-SHA1 implementation.\n"
+            "      To use OpenSSL, install the appropriate development files.\n"
+            "      E.g. on Ubuntu/Debian install libssl-dev.")
+    list(APPEND US3_SOURCES
+      hmac_sha1_custom.cpp)
+  endif()
 endif()
 
 set(US3_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
