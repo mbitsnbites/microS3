@@ -17,39 +17,23 @@
 //  3. This notice may not be removed or altered from any source distribution.
 //--------------------------------------------------------------------------------------------------
 
-#include <doctest.h>
-#include <return_value.hpp>
-#include <sha1_hmac.hpp>
-#include <string>
+#include "hmac_sha1.hpp"
 
-// Workaround for macOS build errors.
-// See: https://github.com/onqtam/doctest/issues/126
-#include <iostream>
+#include <cstring>
+#include <openssl/hmac.h>
 
-TEST_CASE("Hash some strings") {
-  SUBCASE("Hello world") {
-    // GIVEN
-    const char* key = "zupaS3cret!";
-    const char* data = "Hello world!";
+namespace us3 {
 
-    // WHEN
-    const auto result = us3::sha1_hmac(key, data);
-
-    // THEN
-    CHECK_EQ(result.is_success(), true);
-    CHECK_EQ(std::string(result->c_str()), "vfSHGKMkJ32kPV1xpaeZG74J5Fg=");
-  }
-
-  SUBCASE("Empty data") {
-    // GIVEN
-    const char* key = "abcdefghijklmnopqrstuvwxyz";
-    const char* data = "";
-
-    // WHEN
-    const auto result = us3::sha1_hmac(key, data);
-
-    // THEN
-    CHECK_EQ(result.is_success(), true);
-    CHECK_EQ(std::string(result->c_str()), "KM+4KvZd8CLgj6GmcSEGjB1IC8g=");
-  }
+result_t<hmac_sha1_t> hmac_sha1(const char* key, const char* data) {
+  unsigned char raw_digest[hmac_sha1_t::HMAC_SHA1_RAW_SIZE];
+  (void)::HMAC(::EVP_sha1(),
+               key,
+               static_cast<int>(std::strlen(key)),
+               reinterpret_cast<const unsigned char*>(data),
+               std::strlen(data),
+               reinterpret_cast<unsigned char*>(&raw_digest[0]),
+               NULL);
+  return make_result(hmac_sha1_t(raw_digest));
 }
+
+}  // namespace us3

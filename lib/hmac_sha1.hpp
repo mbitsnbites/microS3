@@ -17,23 +17,23 @@
 //  3. This notice may not be removed or altered from any source distribution.
 //--------------------------------------------------------------------------------------------------
 
-#ifndef US3_SHA1_HMAC_HPP_
-#define US3_SHA1_HMAC_HPP_
+#ifndef US3_HMAC_SHA1_HPP_
+#define US3_HMAC_SHA1_HPP_
 
 #include "return_value.hpp"
 
 namespace us3 {
 
-/// @brief A SHA1 HMAC digest.
-class sha1_hmac_t {
+/// @brief An HMAC-SHA1 digest.
+class hmac_sha1_t {
 public:
-  // The raw SHA1 HMAC digest size is 20 bytes.
-  static const int SHA1_HMAC_RAW_SIZE = 20;
+  // The raw HMAC-SHA1 digest size is 20 bytes.
+  static const int HMAC_SHA1_RAW_SIZE = 20;
 
   /// @brief Construct a base64 encoded digest from a raw digest.
   /// @param raw_digest The raw digest buffer.
   /// @note This implementation is hardcoded for converting 20 raw bytes to 28 base64 chars.
-  sha1_hmac_t(const unsigned char (&raw_digest)[20]) {
+  hmac_sha1_t(const unsigned char (&raw_digest)[20]) {
     static const char* const BASE64_CHARS =
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
@@ -67,18 +67,18 @@ public:
   }
 
 private:
-  // The base64-encoded SHA1 HMAC digest size is 28 bytes (excluding the zero termination).
-  static const int SHA1_HMAC_BASE64_SIZE = 28;
+  // The base64-encoded HMAC-SHA1 digest size is 28 bytes (excluding the zero termination).
+  static const int HMAC_SHA1_BASE64_SIZE = 28;
 
-  char m_digest[SHA1_HMAC_BASE64_SIZE + 1];
+  char m_digest[HMAC_SHA1_BASE64_SIZE + 1];
 };
 
-/// @brief Generate the SHA1 HMAC hash for a string.
+/// @brief Generate the HMAC-SHA1 hash for a string.
 /// @param key The secret key.
 /// @param data The data to hash.
 /// @returns the digest.
-result_t<sha1_hmac_t> sha1_hmac(const char* key, const char* data);
+result_t<hmac_sha1_t> hmac_sha1(const char* key, const char* data);
 
 }  // namespace us3
 
-#endif  // US3_SHA1_HMAC_HPP_
+#endif  // US3_HMAC_SHA1_HPP_

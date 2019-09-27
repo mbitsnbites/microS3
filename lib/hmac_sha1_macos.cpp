@@ -17,23 +17,17 @@
 //  3. This notice may not be removed or altered from any source distribution.
 //--------------------------------------------------------------------------------------------------
 
-#include "sha1_hmac.hpp"
+#include "hmac_sha1.hpp"
 
+#include <CommonCrypto/CommonHMAC.h>
 #include <cstring>
-#include <openssl/hmac.h>
 
 namespace us3 {
 
-result_t<sha1_hmac_t> sha1_hmac(const char* key, const char* data) {
-  unsigned char raw_digest[sha1_hmac_t::SHA1_HMAC_RAW_SIZE];
-  (void)::HMAC(::EVP_sha1(),
-               key,
-               static_cast<int>(std::strlen(key)),
-               reinterpret_cast<const unsigned char*>(data),
-               std::strlen(data),
-               reinterpret_cast<unsigned char*>(&raw_digest[0]),
-               NULL);
-  return make_result(sha1_hmac_t(raw_digest));
+result_t<hmac_sha1_t> hmac_sha1(const char* key, const char* data) {
+  unsigned char raw_digest[hmac_sha1_t::HMAC_SHA1_RAW_SIZE];
+  ::CCHmac(kCCHmacAlgSHA1, key, std::strlen(key), data, std::strlen(data), &raw_digest[0]);
+  return make_result(hmac_sha1_t(raw_digest));
 }
 
 }  // namespace us3

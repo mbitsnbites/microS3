@@ -19,7 +19,7 @@
 
 #include "connection.hpp"
 
-#include "sha1_hmac.hpp"
+#include "hmac_sha1.hpp"
 #include <algorithm>
 #include <cctype>
 #include <clocale>
@@ -344,7 +344,7 @@ status_t connection_t::send_http_headers(const char* host_name,
   // Generate a signature based on the request info and the S3 secret key.
   const std::string string_to_sign =
       http_method + "\n\n" + content_type + "\n" + date_formatted + "\n" + relative_path;
-  const result_t<sha1_hmac_t> digest = sha1_hmac(secret_key, string_to_sign.c_str());
+  const result_t<hmac_sha1_t> digest = hmac_sha1(secret_key, string_to_sign.c_str());
   if (digest.is_error()) {
     return make_result(digest.status());
   }

@@ -17,17 +17,39 @@
 //  3. This notice may not be removed or altered from any source distribution.
 //--------------------------------------------------------------------------------------------------
 
-#include "sha1_hmac.hpp"
+#include <doctest.h>
+#include <hmac_sha1.hpp>
+#include <return_value.hpp>
+#include <string>
 
-#include <CommonCrypto/CommonHMAC.h>
-#include <cstring>
+// Workaround for macOS build errors.
+// See: https://github.com/onqtam/doctest/issues/126
+#include <iostream>
 
-namespace us3 {
+TEST_CASE("Hash some strings") {
+  SUBCASE("Hello world") {
+    // GIVEN
+    const char* key = "zupaS3cret!";
+    const char* data = "Hello world!";
 
-result_t<sha1_hmac_t> sha1_hmac(const char* key, const char* data) {
-  unsigned char raw_digest[sha1_hmac_t::SHA1_HMAC_RAW_SIZE];
-  ::CCHmac(kCCHmacAlgSHA1, key, std::strlen(key), data, std::strlen(data), &raw_digest[0]);
-  return make_result(sha1_hmac_t(raw_digest));
+    // WHEN
+    const auto result = us3::hmac_sha1(key, data);
+
+    // THEN
+    CHECK_EQ(result.is_success(), true);
+    CHECK_EQ(std::string(result->c_str()), "vfSHGKMkJ32kPV1xpaeZG74J5Fg=");
+  }
+
+  SUBCASE("Empty data") {
+    // GIVEN
+    const char* key = "abcdefghijklmnopqrstuvwxyz";
+    const char* data = "";
+
+    // WHEN
+    const auto result = us3::hmac_sha1(key, data);
+
+    // THEN
+    CHECK_EQ(result.is_success(), true);
+    CHECK_EQ(std::string(result->c_str()), "KM+4KvZd8CLgj6GmcSEGjB1IC8g=");
+  }
 }
-
-}  // namespace us3

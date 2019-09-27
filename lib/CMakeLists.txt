@@ -28,9 +28,9 @@ set(US3_SOURCES
   capi_status.cpp
   connection.cpp
   connection.hpp
+  hmac_sha1.hpp
   network_socket.hpp
   return_value.hpp
-  sha1_hmac.hpp
   url_parser.cpp
   url_parser.hpp
   )
@@ -39,19 +39,19 @@ set(US3_SOURCES
 set(US3_LIBS)
 if(WIN32 OR MINGW)
   list(APPEND US3_SOURCES
-    sha1_hmac_win32.cpp
+    hmac_sha1_win32.cpp
     network_socket_win32.cpp)
   list(APPEND US3_LIBS
     userenv
     ws2_32)
 elseif(APPLE)
   list(APPEND US3_SOURCES
-    sha1_hmac_macos.cpp
+    hmac_sha1_macos.cpp
     network_socket_posix.cpp)
 else()
   find_package(OpenSSL REQUIRED)
   list(APPEND US3_SOURCES
-    sha1_hmac_openssl.cpp
+    hmac_sha1_openssl.cpp
     network_socket_posix.cpp)
   list(APPEND US3_LIBS
     ${OPENSSL_CRYPTO_LIBRARIES})

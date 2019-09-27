@@ -17,7 +17,7 @@
 //  3. This notice may not be removed or altered from any source distribution.
 //--------------------------------------------------------------------------------------------------
 
-#include "sha1_hmac.hpp"
+#include "hmac_sha1.hpp"
 
 #include <cstring>
 #include <vector>
@@ -33,8 +33,8 @@
 
 namespace us3 {
 
-result_t<sha1_hmac_t> sha1_hmac(const char* key, const char* data) {
-  unsigned char raw_digest[sha1_hmac_t::SHA1_HMAC_RAW_SIZE];
+result_t<hmac_sha1_t> hmac_sha1(const char* key, const char* data) {
+  unsigned char raw_digest[hmac_sha1_t::HMAC_SHA1_RAW_SIZE];
   status_t::status_enum_t return_status = status_t::ERROR;
 
   // Windows implementation inspired by:
@@ -80,7 +80,7 @@ result_t<sha1_hmac_t> sha1_hmac(const char* key, const char* data) {
                             0)) {
             DWORD hash_len = 0;
             if (CryptGetHashParam(crypt_hash, HP_HASHVAL, 0, &hash_len, 0)) {
-              if (hash_len == sha1_hmac_t::SHA1_HMAC_RAW_SIZE) {
+              if (hash_len == hmac_sha1_t::HMAC_SHA1_RAW_SIZE) {
                 if (CryptGetHashParam(crypt_hash,
                                       HP_HASHVAL,
                                       reinterpret_cast<BYTE*>(&raw_digest[0]),
@@ -105,7 +105,7 @@ result_t<sha1_hmac_t> sha1_hmac(const char* key, const char* data) {
   }
   CryptReleaseContext(crypt_prov, 0);
 
-  return make_result(sha1_hmac_t(raw_digest), return_status);
+  return make_result(hmac_sha1_t(raw_digest), return_status);
 }
 
 }  // namespace us3
