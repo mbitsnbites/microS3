@@ -3,22 +3,25 @@
 
 language: cpp
 
+# Linux
+os: linux
+dist: xenial
+compiler: gcc
+addons:
+  apt:
+    packages:
+      - ninja-build
+env:
+  - BUILD_SHARED=off
+  - BUILD_SHARED=on
+script:
+  - mkdir out && cd out
+  - cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=${BUILD_SHARED} ..
+  - cmake --build .
+  - CTEST_OUTPUT_ON_FAILURE=TRUE ctest
+
 matrix:
   include:
-    # Linux GCC
-    - os: linux
-      dist: xenial
-      compiler: gcc
-      addons:
-        apt:
-          packages:
-            - ninja-build
-      script:
-        - mkdir out && cd out
-        - cmake -G Ninja -DCMAKE_BUILD_TYPE=Release ..
-        - cmake --build .
-        - CTEST_OUTPUT_ON_FAILURE=TRUE ctest
-
     # macOS clang
     - os: osx
       compiler: clang
@@ -29,7 +32,7 @@ matrix:
             - ninja
       script:
         - mkdir out && cd out
-        - cmake -G Ninja -DCMAKE_BUILD_TYPE=Release ..
+        - cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=off ..
         - cmake --build .
         - CTEST_OUTPUT_ON_FAILURE=TRUE ctest
 
@@ -45,7 +48,7 @@ matrix:
             - g++-mingw-w64-x86-64
       script:
         - mkdir out && cd out
-        - CC=x86_64-w64-mingw32-gcc CXX=x86_64-w64-mingw32-g++ cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_BUILD_WITH_INSTALL_RPATH=on ..
+        - CC=x86_64-w64-mingw32-gcc CXX=x86_64-w64-mingw32-g++ cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=off -DCMAKE_BUILD_WITH_INSTALL_RPATH=on ..
         - cmake --build .
 
     # Windows MSVC 2017
@@ -60,6 +63,6 @@ matrix:
       script:
         - mkdir out && cd out
         - cmd.exe /C '"C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" amd64 &&
-          cmake -G Ninja -DCMAKE_BUILD_TYPE=Release .. &&
+          cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=off .. &&
           ninja'
         - CTEST_OUTPUT_ON_FAILURE=TRUE ninja test
