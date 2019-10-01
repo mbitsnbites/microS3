@@ -17,62 +17,54 @@
 #  3. This notice may not be removed or altered from any source distribution.
 ###################################################################################################
 
-# We build everything against the C++03 standard (since CMake does not support 3 as a standard, we
-# use 98 which is close enough and for most purposes identical).
-set(CMAKE_CXX_STANDARD 98)
-set(CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
+set(US3_PLATFORM_LIBS)
 
-set(US3_SOURCES
+# Select HMAC-SHA1 implementation.
+set(US3_HMAC_SHA1_SRC)
+if(WIN32 OR MINGW)
+  set(US3_HMAC_SHA1_SRC hmac_sha1_win32.cpp)
+  list(APPEND US3_PLATFORM_LIBS userenv)
+elseif(APPLE)
+  set(US3_HMAC_SHA1_SRC hmac_sha1_macos.cpp)
+else()
+  find_package(OpenSSL)
+  if(OPENSSL_FOUND)
+    set(US3_HMAC_SHA1_SRC hmac_sha1_openssl.cpp)
+    list(APPEND US3_PLATFORM_LIBS ${OPENSSL_CRYPTO_LIBRARIES})
+  endif()
+endif()
+
+# If no system HMAC-SHA1 implementation was found, fall back to a custom implementation.
+if(NOT US3_HMAC_SHA1_SRC)
+  message("Note: Using a custom HMAC-SHA1 implementation.\n"
+          "      To use OpenSSL, install the appropriate development files.\n"
+          "      E.g. on Ubuntu/Debian install libssl-dev.")
+  set(US3_HMAC_SHA1_SRC hmac_sha1_custom.cpp)
+endif()
+
+# Select socket implementation.
+if(WIN32 OR MINGW)
+  set(US3_NETWORK_SOCKET_SRC network_socket_win32.cpp)
+  list(APPEND US3_PLATFORM_LIBS ws2_32)
+else()
+  set(US3_NETWORK_SOCKET_SRC network_socket_posix.cpp)
+endif()
+
+# Create the library target.
+set(US3_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
+add_library(us3
   capi.cpp
   capi_status.cpp
   connection.cpp
   connection.hpp
+  ${US3_HMAC_SHA1_SRC}
   hmac_sha1.hpp
+  ${US3_NETWORK_SOCKET_SRC}
   network_socket.hpp
   return_value.hpp
   url_parser.cpp
-  url_parser.hpp
-  )
-
-# Platform support.
-set(US3_LIBS)
-if(WIN32 OR MINGW)
-  list(APPEND US3_SOURCES
-    hmac_sha1_win32.cpp
-    network_socket_win32.cpp)
-  list(APPEND US3_LIBS
-    userenv
-    ws2_32)
-elseif(APPLE)
-  list(APPEND US3_SOURCES
-    hmac_sha1_macos.cpp
-    network_socket_posix.cpp)
-else()
-  list(APPEND US3_SOURCES
-    network_socket_posix.cpp)
-
-  # We use OpenSSL if it's present, otherwise we fall back to a custom implementation.
-  find_package(OpenSSL)
-  if(OPENSSL_FOUND)
-    list(APPEND US3_SOURCES
-      hmac_sha1_openssl.cpp)
-    list(APPEND US3_LIBS
-      ${OPENSSL_CRYPTO_LIBRARIES})
-  else()
-    message("Note: Using a custom HMAC-SHA1 implementation.\n"
-            "      To use OpenSSL, install the appropriate development files.\n"
-            "      E.g. on Ubuntu/Debian install libssl-dev.")
-    list(APPEND US3_SOURCES
-      hmac_sha1_custom.cpp)
-  endif()
-endif()
-
-set(US3_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
-
-# Create the library target.
-add_library(us3 ${US3_SOURCES})
-target_link_libraries(us3 PRIVATE ${US3_LIBS})
+  url_parser.hpp)
+target_link_libraries(us3 PRIVATE ${US3_PLATFORM_LIBS})
 target_include_directories(us3 PUBLIC ${US3_INCLUDE_DIR})
 target_compile_definitions(us3 PRIVATE US3_BUILDING_LIBRARY)
 set_target_properties(us3 PROPERTIES C_VISIBILITY_PRESET hidden)
@@ -84,6 +76,20 @@ if(_us3_library_type STREQUAL "SHARED_LIBRARY")
   target_compile_definitions(us3 PUBLIC US3_SHARED_LIB)
 endif()
 
+# Unit tests.
+add_executable(hmac_sha1_test
+  hmac_sha1_test.cpp
+  ${US3_HMAC_SHA1_SRC})
+target_link_libraries(hmac_sha1_test doctest ${US3_PLATFORM_LIBS})
+add_test(hmac_sha1_test hmac_sha1_test)
+
+add_executable(url_parser_test
+  url_parser_test.cpp
+  url_parser.cpp)
+target_link_libraries(url_parser_test doctest)
+add_test(url_parser_test url_parser_test)
+
+# Installation components.
 install(
   TARGETS us3
   LIBRARY DESTINATION lib

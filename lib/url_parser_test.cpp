@@ -17,9 +17,10 @@
 //  3. This notice may not be removed or altered from any source distribution.
 //--------------------------------------------------------------------------------------------------
 
+#include "url_parser.hpp"
+
+#include "return_value.hpp"
 #include <doctest.h>
-#include <return_value.hpp>
-#include <url_parser.hpp>
 
 // Workaround for macOS build errors.
 // See: https://github.com/onqtam/doctest/issues/126
@@ -31,7 +32,7 @@ TEST_CASE("Parse valid URL strings") {
     const char* url = "http://myhost/hello/world";
 
     // WHEN
-    const auto result = us3::parse_url(url);
+    const us3::result_t<us3::url_parts_t> result = us3::parse_url(url);
 
     // THEN
     CHECK_EQ(result.is_success(), true);
@@ -46,7 +47,7 @@ TEST_CASE("Parse valid URL strings") {
     const char* url = "https://myhost/hello.foo";
 
     // WHEN
-    const auto result = us3::parse_url(url);
+    const us3::result_t<us3::url_parts_t> result = us3::parse_url(url);
 
     // THEN
     CHECK_EQ(result.is_success(), true);
@@ -61,7 +62,7 @@ TEST_CASE("Parse valid URL strings") {
     const char* url = "foo://othermachine:9876/hello/world&who=me#flag";
 
     // WHEN
-    const auto result = us3::parse_url(url);
+    const us3::result_t<us3::url_parts_t> result = us3::parse_url(url);
 
     // THEN
     CHECK_EQ(result.is_success(), true);

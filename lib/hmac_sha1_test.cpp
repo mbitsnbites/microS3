@@ -17,9 +17,10 @@
 //  3. This notice may not be removed or altered from any source distribution.
 //--------------------------------------------------------------------------------------------------
 
+#include "hmac_sha1.hpp"
+
+#include "return_value.hpp"
 #include <doctest.h>
-#include <hmac_sha1.hpp>
-#include <return_value.hpp>
 #include <string>
 
 // Workaround for macOS build errors.
@@ -33,7 +34,7 @@ TEST_CASE("Hash some strings") {
     const char* data = "Hello world!";
 
     // WHEN
-    const auto result = us3::hmac_sha1(key, data);
+    const us3::result_t<us3::hmac_sha1_t> result = us3::hmac_sha1(key, data);
 
     // THEN
     CHECK_EQ(result.is_success(), true);
@@ -46,7 +47,7 @@ TEST_CASE("Hash some strings") {
     const char* data = "";
 
     // WHEN
-    const auto result = us3::hmac_sha1(key, data);
+    const us3::result_t<us3::hmac_sha1_t> result = us3::hmac_sha1(key, data);
 
     // THEN
     CHECK_EQ(result.is_success(), true);
@@ -65,7 +66,7 @@ TEST_CASE("Hash some strings") {
         "est laborum.";
 
     // WHEN
-    const auto result = us3::hmac_sha1(key, data);
+    const us3::result_t<us3::hmac_sha1_t> result = us3::hmac_sha1(key, data);
 
     // THEN
     CHECK_EQ(result.is_success(), true);
@@ -84,7 +85,7 @@ TEST_CASE("Hash some strings") {
     const char* data = "123";
 
     // WHEN
-    const auto result = us3::hmac_sha1(key, data);
+    const us3::result_t<us3::hmac_sha1_t> result = us3::hmac_sha1(key, data);
 
     // THEN
     CHECK_EQ(result.is_success(), true);

@@ -33,14 +33,20 @@ if(MSVC)
   add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 endif()
 
+# We build everything against the C++03 standard (since CMake does not support 3 as a standard, we
+# use 98 which is close enough and for most purposes identical).
+set(CMAKE_CXX_STANDARD 98)
+set(CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+# External dependencies (doctest).
+add_subdirectory(ext)
+
 # The us3 library.
 add_subdirectory(lib)
 
 # Tools.
 add_subdirectory(tools)
-
-# Tests.
-add_subdirectory(test)
 
 # API documentation.
 find_package(Doxygen)
