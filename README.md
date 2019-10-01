@@ -139,5 +139,6 @@ int main(void) {
 
   /* Close the S3 stream. */
   us3_close(handle);
+  exit(0);
 }
 ```
