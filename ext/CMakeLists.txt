@@ -20,7 +20,7 @@
 if(US3_ENABLE_TESTS)
   # We use doctest for tests.
   # See: https://github.com/onqtam/doctest/
-  add_library(doctest
+  add_library(doctest STATIC
               doctest/doctest_main.cpp
               doctest/doctest.h)
   target_include_directories(doctest PUBLIC doctest)
