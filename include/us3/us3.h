@@ -23,27 +23,27 @@
 #include <stddef.h> /* For size_t */
 
 #if defined(US3_SHARED_LIB)
-# if defined(US3_BUILDING_LIBRARY)
-#  if defined(_MSC_VER)
-#   define US3_API_VISIBILITY __declspec(dllexport)
+#  if defined(US3_BUILDING_LIBRARY)
+#    if defined(_MSC_VER)
+#      define US3_API_VISIBILITY __declspec(dllexport)
+#    else
+#      define US3_API_VISIBILITY __attribute__((visibility("default")))
+#    endif
 #  else
-#   define US3_API_VISIBILITY __attribute__((visibility("default")))
+#    if defined(_MSC_VER)
+#      define US3_API_VISIBILITY __declspec(dllimport)
+#    else
+#      define US3_API_VISIBILITY
+#    endif
 #  endif
-# else
-#  if defined(_MSC_VER)
-#   define US3_API_VISIBILITY __declspec(dllimport)
-#  else
-#   define US3_API_VISIBILITY
-#  endif
-# endif
 #else
-# define US3_API_VISIBILITY
+#  define US3_API_VISIBILITY
 #endif
 
 #ifdef __cplusplus
-# define US3_API extern "C" US3_API_VISIBILITY
+#  define US3_API extern "C" US3_API_VISIBILITY
 #else
-# define US3_API US3_API_VISIBILITY
+#  define US3_API US3_API_VISIBILITY
 #endif
 
 /**

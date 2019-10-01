@@ -130,7 +130,7 @@ public:
 private:
   static const size_t MAX_BUFFER_SIZE = 1024;
 
-  status_t send_http_headers(const char *host_name,
+  status_t send_http_headers(const char* host_name,
                              const char* path,
                              const char* access_key,
                              const char* secret_key,

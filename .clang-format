@@ -10,6 +10,7 @@ IncludeCategories:
     Priority: 2
   - Regex:    '^"'
     Priority: 1
+IndentPPDirectives: AfterHash
 SortIncludes: true
 ...
 
