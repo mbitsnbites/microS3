@@ -21,24 +21,27 @@ set(US3_PLATFORM_LIBS)
 
 # Select HMAC-SHA1 implementation.
 set(US3_HMAC_SHA1_SRC)
-if(WIN32 OR MINGW)
-  set(US3_HMAC_SHA1_SRC hmac_sha1_win32.cpp)
-  list(APPEND US3_PLATFORM_LIBS userenv)
-elseif(APPLE)
-  set(US3_HMAC_SHA1_SRC hmac_sha1_macos.cpp)
-else()
-  find_package(OpenSSL)
-  if(OPENSSL_FOUND)
-    set(US3_HMAC_SHA1_SRC hmac_sha1_openssl.cpp)
-    list(APPEND US3_PLATFORM_LIBS ${OPENSSL_CRYPTO_LIBRARIES})
+if(US3_ENABLE_SYSTEM_CRYPTO)
+  if(WIN32 OR MINGW)
+    set(US3_HMAC_SHA1_SRC hmac_sha1_win32.cpp)
+    list(APPEND US3_PLATFORM_LIBS userenv)
+  elseif(APPLE)
+    set(US3_HMAC_SHA1_SRC hmac_sha1_macos.cpp)
+  else()
+    find_package(OpenSSL)
+    if(OPENSSL_FOUND)
+      set(US3_HMAC_SHA1_SRC hmac_sha1_openssl.cpp)
+      list(APPEND US3_PLATFORM_LIBS ${OPENSSL_CRYPTO_LIBRARIES})
+    else()
+      message("Note: To use OpenSSL, install the appropriate development files.\n"
+              "      E.g. on Ubuntu/Debian install libssl-dev.")
+    endif()
   endif()
 endif()
 
 # If no system HMAC-SHA1 implementation was found, fall back to a custom implementation.
 if(NOT US3_HMAC_SHA1_SRC)
-  message("Note: Using a custom HMAC-SHA1 implementation.\n"
-          "      To use OpenSSL, install the appropriate development files.\n"
-          "      E.g. on Ubuntu/Debian install libssl-dev.")
+  message("Note: Using a custom HMAC-SHA1 implementation.")
   set(US3_HMAC_SHA1_SRC hmac_sha1_custom.cpp)
 endif()
 
@@ -77,17 +80,19 @@ if(_us3_library_type STREQUAL "SHARED_LIBRARY")
 endif()
 
 # Unit tests.
-add_executable(hmac_sha1_test
-  hmac_sha1_test.cpp
-  ${US3_HMAC_SHA1_SRC})
-target_link_libraries(hmac_sha1_test doctest ${US3_PLATFORM_LIBS})
-add_test(hmac_sha1_test hmac_sha1_test)
+if(US3_ENABLE_TESTS)
+  add_executable(hmac_sha1_test
+    hmac_sha1_test.cpp
+    ${US3_HMAC_SHA1_SRC})
+  target_link_libraries(hmac_sha1_test doctest ${US3_PLATFORM_LIBS})
+  add_test(hmac_sha1_test hmac_sha1_test)
 
-add_executable(url_parser_test
-  url_parser_test.cpp
-  url_parser.cpp)
-target_link_libraries(url_parser_test doctest)
-add_test(url_parser_test url_parser_test)
+  add_executable(url_parser_test
+    url_parser_test.cpp
+    url_parser.cpp)
+  target_link_libraries(url_parser_test doctest)
+  add_test(url_parser_test url_parser_test)
+endif()
 
 # Installation components.
 install(

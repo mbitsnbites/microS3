@@ -20,7 +20,14 @@
 cmake_minimum_required(VERSION 3.4)
 project(microS3)
 
-enable_testing()
+# Build options for the microS3 project.
+option(US3_ENABLE_TESTS         "microS3: Enable unit tests" on)
+option(US3_ENABLE_TOOLS         "microS3: Enable tools" on)
+option(US3_ENABLE_SYSTEM_CRYPTO "microS3: Use system crypto libs when available" on)
+
+if(US3_ENABLE_TESTS)
+  enable_testing()
+endif()
 
 if(MINGW)
   # For ease of deployment, statically link the standard libraries when using MinGW.
@@ -46,7 +53,9 @@ add_subdirectory(ext)
 add_subdirectory(lib)
 
 # Tools.
-add_subdirectory(tools)
+if(US3_ENABLE_TOOLS)
+  add_subdirectory(tools)
+endif()
 
 # API documentation.
 find_package(Doxygen)
