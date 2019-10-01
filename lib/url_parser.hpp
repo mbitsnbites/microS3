@@ -27,6 +27,9 @@ namespace us3 {
 
 /// @brief Different parts of an URL.
 struct url_parts_t {
+  url_parts_t() : port(0) {
+  }
+
   std::string scheme;  ///< Scheme (e.g. "http" or "https").
   std::string host;    ///< Host name (e.g. "myhost" or "192.168.0.1").
   std::string path;    ///< Path including leading slash (e.g. "/path/to/object").

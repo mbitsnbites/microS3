@@ -22,18 +22,6 @@
 #include <cstdlib>
 
 namespace us3 {
-namespace {
-
-int string_to_int(const char* str) {
-  char* end;
-  const long int x = std::strtol(str, &end, 10);
-  if (x == 0L) {
-    return -1;
-  }
-  return static_cast<int>(x);
-}
-
-}  // namespace
 
 result_t<url_parts_t> parse_url(const char* url) {
   url_parts_t parts;
@@ -46,7 +34,7 @@ result_t<url_parts_t> parse_url(const char* url) {
   if ((url[k] != ':') || (url[k + 1] != '/') || (url[k + 2] != '/')) {
     return make_result(parts, status_t::INVALID_URL);
   }
-  parts.scheme = std::string(&url[part_start], k - part_start);
+  parts.scheme = std::string(&url[part_start], static_cast<size_t>(k - part_start));
   part_start = k + 3;
 
   // Extract the host.
@@ -56,7 +44,7 @@ result_t<url_parts_t> parse_url(const char* url) {
     return make_result(parts, status_t::INVALID_URL);
   }
   const bool has_port = (url[k] == ':');
-  parts.host = std::string(&url[part_start], k - part_start);
+  parts.host = std::string(&url[part_start], static_cast<size_t>(k - part_start));
   part_start = k + (has_port ? 1 : 0);
 
   // Extract the port.
