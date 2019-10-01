@@ -17,10 +17,11 @@
 #  3. This notice may not be removed or altered from any source distribution.
 ###################################################################################################
 
-# We use doctest for tests.
-# See: https://github.com/onqtam/doctest/
-add_library(doctest
-            doctest/doctest_main.cpp
-            doctest/doctest.h)
-target_include_directories(doctest PUBLIC doctest)
-
+if(US3_ENABLE_TESTS)
+  # We use doctest for tests.
+  # See: https://github.com/onqtam/doctest/
+  add_library(doctest
+              doctest/doctest_main.cpp
+              doctest/doctest.h)
+  target_include_directories(doctest PUBLIC doctest)
+endif()
