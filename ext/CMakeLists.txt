@@ -17,17 +17,10 @@
 #  3. This notice may not be removed or altered from any source distribution.
 ###################################################################################################
 
-#---------------------------------------------------------------------------------------------------
-# us3_add_test: Add a test executable.
-#
-# Usage:
-#   us3_add_test(<test source file>)
-#---------------------------------------------------------------------------------------------------
-function(us3_add_test _source_file)
-  get_filename_component(_test_name "${_source_file}" NAME_WE)
+# We use doctest for tests.
+# See: https://github.com/onqtam/doctest/
+add_library(doctest
+            doctest/doctest_main.cpp
+            doctest/doctest.h)
+target_include_directories(doctest PUBLIC doctest)
 
-  add_executable(${_test_name} ${_source_file})
-  target_link_libraries(${_test_name} us3 doctest)
-  target_include_directories(${_test_name} PRIVATE ${PROJECT_SOURCE_DIR}/lib)
-  add_test(${_test_name} ${_test_name})
-endfunction()
