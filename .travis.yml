@@ -12,11 +12,12 @@ addons:
     packages:
       - ninja-build
 env:
-  - BUILD_SHARED=off
-  - BUILD_SHARED=on
+  - BUILD_SHARED=off US3_ENABLE_SYSTEM_CRYPTO=on
+  - BUILD_SHARED=on  US3_ENABLE_SYSTEM_CRYPTO=on
+  - BUILD_SHARED=off US3_ENABLE_SYSTEM_CRYPTO=off
 script:
   - mkdir out && cd out
-  - cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=${BUILD_SHARED} ..
+  - cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=${BUILD_SHARED} -DUS3_ENABLE_SYSTEM_CRYPTO=${US3_ENABLE_SYSTEM_CRYPTO} ..
   - cmake --build .
   - CTEST_OUTPUT_ON_FAILURE=TRUE ctest
 
