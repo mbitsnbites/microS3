@@ -79,6 +79,13 @@ if(_us3_library_type STREQUAL "SHARED_LIBRARY")
   target_compile_definitions(us3 PUBLIC US3_SHARED_LIB)
 endif()
 
+# Enable compiler warnings.
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  target_compile_options(us3 PRIVATE -Wall -Wextra -Wconversion -Wsign-conversion -pedantic -Werror)
+elseif(MSVC)
+  target_compile_options(us3 PRIVATE /WX)
+endif()
+
 # Unit tests.
 if(US3_ENABLE_TESTS)
   add_executable(hmac_sha1_test

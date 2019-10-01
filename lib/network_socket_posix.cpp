@@ -65,6 +65,10 @@ result_t<socket_t> connect(const char* host,
                            const int port,
                            const timeout_t connect_timeout,
                            const timeout_t socket_timeout) {
+  // TODO(m): Make use of these arguments.
+  (void)connect_timeout;
+  (void)socket_timeout;
+
   // Get address info for the host / port.
   ::addrinfo* info;
   {

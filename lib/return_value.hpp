@@ -93,22 +93,22 @@ namespace {
 /// @param v The result value.
 /// @note The status of the result object is @c SUCCESS.
 template <typename T>
-result_t<T> make_result(const T& v) {
+inline result_t<T> make_result(const T& v) {
   return result_t<T>(v, status_t::SUCCESS);
+}
+
+/// @brief Construct a result object with a status.
+/// @param s The result status.
+inline status_t make_result(const status_t::status_enum_t s) {
+  return status_t(s);
 }
 
 /// @brief Construct a result object with a value and a status.
 /// @param v The result value.
 /// @param s The result status.
 template <typename T>
-result_t<T> make_result(const T& v, const status_t::status_enum_t s) {
+inline result_t<T> make_result(const T& v, const status_t::status_enum_t s) {
   return result_t<T>(v, s);
-}
-
-/// @brief Construct a result object with a status.
-/// @param s The result status.
-status_t make_result(const status_t::status_enum_t s) {
-  return status_t(s);
 }
 
 }  // namespace

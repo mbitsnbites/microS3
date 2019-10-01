@@ -126,7 +126,8 @@ header_field_t parse_header_field(const std::string& line) {
   for (std::string::iterator it = name.begin(); it != name.end(); it++) {
     unsigned char c = static_cast<unsigned char>(*it);
     if (c >= static_cast<unsigned char>('A') && c <= static_cast<unsigned char>('Z')) {
-      *it = *it - ('Z' - 'z');
+      c = static_cast<unsigned char>(c + 'z' - 'Z');
+      *it = static_cast<std::string::value_type>(c);
     }
   }
 
