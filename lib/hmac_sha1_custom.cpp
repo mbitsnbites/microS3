@@ -19,6 +19,7 @@
 
 #include "hmac_sha1.hpp"
 
+#include <algorithm>
 #include <cstring>
 #include <stdint.h>
 #include <vector>
@@ -43,24 +44,32 @@ void set_uint32_be(const uint32_t x, unsigned char* ptr) {
 
 // Calculate the SHA1 hash for a message.
 // Based on pseudocode from Wikipedia: https://en.wikipedia.org/wiki/SHA-1#SHA-1_pseudocode
-void sha1(const unsigned char* msg, const size_t msg_size, unsigned char (&hash)[20]) {
+void sha1(const unsigned char* msg, size_t msg_size, unsigned char (&hash)[20]) {
+  // The original message size, in bits.
+  const uint64_t original_size_bits = static_cast<uint64_t>(msg_size) * 8u;
+
+  // The maximum number of extra bytes required for padding and meta data.
+  const size_t MAX_EXTRA_BYTES = 129u;
+
   // Make a copy of the message into a new buffer.
-  std::vector<unsigned char> message;
-  message.assign(msg, msg + msg_size);
+  std::vector<unsigned char> message(msg_size + MAX_EXTRA_BYTES);
+  std::copy(msg, msg + msg_size, &message[0]);
 
   // Set the first bit after the message to 1.
-  message.push_back(0x80u);
+  message[msg_size++] = 0x80u;
 
   // Pad the message to a multiple of 512 bits (i.e. 64 characters), minus the 64-bit size (see
   // below).
-  size_t padding = 64u - (message.size() % 64u);
-  padding = (padding >= 8) ? padding - 8 : padding + 64 - 8;
-  message.insert(message.end(), padding, 0u);
+  size_t padding = 64u - (msg_size % 64u);
+  padding = (padding >= 8u) ? (padding - 8u) : (padding + 64u - 8u);
+  if (padding > 0u) {
+    std::memset(&message[msg_size], 0, padding);
+    msg_size += padding;
+  }
 
-  // Append the original length, in bits, as a 64-bit big endian number.
-  const uint64_t original_size_bits = static_cast<uint64_t>(msg_size) * 8u;
+  // Append the original size as a 64-bit big endian number.
   for (int i = 0; i < 8; ++i) {
-    message.push_back(static_cast<unsigned char>(original_size_bits >> (56 - 8 * i)));
+    message[msg_size++] = static_cast<unsigned char>(original_size_bits >> (56 - 8 * i));
   }
 
   // Initial state of the hash.
@@ -74,15 +83,15 @@ void sha1(const unsigned char* msg, const size_t msg_size, unsigned char (&hash)
   uint32_t w[80];
 
   // Loop over all 512-bit chunks.
-  const size_t num_chunks = message.size() / 64;
-  for (size_t j = 0; j < num_chunks; ++j) {
+  const size_t num_chunks = msg_size / 64u;
+  for (size_t j = 0u; j < num_chunks; ++j) {
     // Extract the chunk as sixteen 32-bit words.
-    for (size_t i = 0; i < 16; ++i) {
+    for (size_t i = 0u; i < 16u; ++i) {
       w[i] = get_uint32_be(&message[(j * 64) + (i * 4)]);
     }
 
     // Extend the sixteen 32-bit words into eighty 32-bit words.
-    for (size_t i = 16; i < 80; ++i) {
+    for (size_t i = 16u; i < 80u; ++i) {
       uint32_t temp = w[i - 3] ^ w[i - 8] ^ w[i - 14] ^ w[i - 16];
       temp = (temp << 1) + (temp >> 31);
       w[i] = temp;
@@ -96,16 +105,16 @@ void sha1(const unsigned char* msg, const size_t msg_size, unsigned char (&hash)
     uint32_t e = h4;
 
     // Main loop.
-    for (size_t i = 0; i < 80; ++i) {
+    for (size_t i = 0u; i < 80u; ++i) {
       uint32_t f;
       uint32_t k;
-      if (i < 20) {
+      if (i < 20u) {
         f = (b & c) | ((~b) & d);
         k = 0x5A827999u;
-      } else if (i < 40) {
+      } else if (i < 40u) {
         f = b ^ c ^ d;
         k = 0x6ED9EBA1u;
-      } else if (i < 60) {
+      } else if (i < 60u) {
         f = (b & c) | (b & d) | (c & d);
         k = 0x8F1BBCDCu;
       } else {
@@ -140,7 +149,7 @@ void sha1(const unsigned char* msg, const size_t msg_size, unsigned char (&hash)
 void prepare_hmac_sha1_key(const char* key, unsigned char (&key_pad)[64]) {
   size_t key_len = std::strlen(key);
 
-  if (key_len > 64) {
+  if (key_len > 64u) {
     // Keys longer than 64 characters are shortened by hashing them (it becomes 20 bytes long).
     unsigned char hash[20];
     sha1(reinterpret_cast<const unsigned char*>(key), key_len, hash);
