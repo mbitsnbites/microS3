@@ -53,9 +53,15 @@ else()
   set(US3_NETWORK_SOCKET_SRC network_socket_posix.cpp)
 endif()
 
+# Select the type of library to build.
+set(US3_LIBRARY_TYPE STATIC)
+if(US3_BUILD_SHARED_LIBS)
+  set(US3_LIBRARY_TYPE SHARED)
+endif()
+
 # Create the library target.
 set(US3_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
-add_library(us3
+add_library(us3 ${US3_LIBRARY_TYPE}
   capi.cpp
   capi_status.cpp
   connection.cpp
@@ -74,8 +80,8 @@ set_target_properties(us3 PROPERTIES C_VISIBILITY_PRESET hidden)
 set_target_properties(us3 PROPERTIES CXX_VISIBILITY_PRESET hidden)
 
 # Are we building a shared library?
-get_target_property(_us3_library_type us3 TYPE)
-if(_us3_library_type STREQUAL "SHARED_LIBRARY")
+get_target_property(_us3_actual_library_type us3 TYPE)
+if(_us3_actual_library_type STREQUAL "SHARED_LIBRARY")
   target_compile_definitions(us3 PUBLIC US3_SHARED_LIB)
 endif()
 
