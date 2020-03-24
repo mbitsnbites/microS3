@@ -76,30 +76,28 @@
  */
 
 /** @brief Return value for μS3 functions. */
-typedef enum {
-  US3_SUCCESS = 0,           /**< No error occurred. */
-  US3_ERROR = 1,             /**< An unspecified error occurred. */
-  US3_INVALID_ARGUMENT = 2,  /**< An invalid argument was passed to a function. */
-  US3_INVALID_HANDLE = 3,    /**< An invalid stream handle was passed to a function. */
-  US3_INVALID_OPERATION = 4, /**< An invalid operation was requested. */
-  US3_INVALID_URL = 5,       /**< An invalid URL was passed to a function. */
-  US3_NO_HOST = 6,           /**< No such host was found. */
-  US3_DENIED = 7,            /**< Access denied. */
-  US3_REFUSED = 8,           /**< The connection was refused. */
-  US3_UNREACHABLE = 9,       /**< The network is unreachable. */
-  US3_CONNECTION_RESET = 10, /**< The connection was reset by the peer. */
-  US3_TIMEOUT = 11,          /**< The operation timed out. */
-  US3_UNSUPPORTED = 12,      /**< An unsupported protocol function was encountered. */
-  US3_NO_SUCH_FIELD = 13,    /**< The requested field was not found. */
-  US3_FORBIDDEN = 14,        /**< The server refused to authorize the request. */
-  US3_NOT_FOUND = 15         /**< The object was not found. */
-} us3_status_t;
+typedef int us3_status_t;
+#define US3_SUCCESS 0           /**< No error occurred. */
+#define US3_ERROR 1             /**< An unspecified error occurred. */
+#define US3_INVALID_ARGUMENT 2  /**< An invalid argument was passed to a function. */
+#define US3_INVALID_HANDLE 3    /**< An invalid stream handle was passed to a function. */
+#define US3_INVALID_OPERATION 4 /**< An invalid operation was requested. */
+#define US3_INVALID_URL 5       /**< An invalid URL was passed to a function. */
+#define US3_NO_HOST 6           /**< No such host was found. */
+#define US3_DENIED 7            /**< Access denied. */
+#define US3_REFUSED 8           /**< The connection was refused. */
+#define US3_UNREACHABLE 9       /**< The network is unreachable. */
+#define US3_CONNECTION_RESET 10 /**< The connection was reset by the peer. */
+#define US3_TIMEOUT 11          /**< The operation timed out. */
+#define US3_UNSUPPORTED 12      /**< An unsupported protocol function was encountered. */
+#define US3_NO_SUCH_FIELD 13    /**< The requested field was not found. */
+#define US3_FORBIDDEN 14        /**< The server refused to authorize the request. */
+#define US3_NOT_FOUND 15        /**< The object was not found. */
 
 /** @brief Stream mode. */
-typedef enum {
-  US3_READ = 0, /**< Open a stream in read mode (GET). */
-  US3_WRITE = 1 /**< Open a stream in write mode (PUT). */
-} us3_mode_t;
+typedef int us3_mode_t;
+#define US3_READ 0  /**< Open a stream in read mode (GET). */
+#define US3_WRITE 1 /**< Open a stream in write mode (PUT). */
 
 /** @brief A stream handle. */
 typedef struct us3_handle_struct_t* us3_handle_t;
