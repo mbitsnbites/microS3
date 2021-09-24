@@ -114,7 +114,7 @@ typedef long us3_microseconds_t;
  * @param status The status code.
  * @returns a string that describes the status code.
  */
-US3_API const char* us3_status_str(const us3_status_t status);
+US3_API const char* us3_status_str(us3_status_t status);
 
 /**
  * @brief Open an S3 stream.
@@ -131,10 +131,10 @@ US3_API const char* us3_status_str(const us3_status_t status);
 US3_API us3_status_t us3_open(const char* url,
                               const char* access_key,
                               const char* secret_key,
-                              const us3_mode_t mode,
-                              const size_t size,
-                              const us3_microseconds_t connect_timeout,
-                              const us3_microseconds_t socket_timeout,
+                              us3_mode_t mode,
+                              size_t size,
+                              us3_microseconds_t connect_timeout,
+                              us3_microseconds_t socket_timeout,
                               us3_handle_t* handle);
 
 /**
@@ -152,10 +152,7 @@ US3_API us3_status_t us3_close(us3_handle_t handle);
  * @param[out] actual_count The actual number of bytes read.
  * @returns US3_SUCCESS on success, otherwise an error code.
  */
-US3_API us3_status_t us3_read(us3_handle_t handle,
-                              void* buf,
-                              const size_t count,
-                              size_t* actual_count);
+US3_API us3_status_t us3_read(us3_handle_t handle, void* buf, size_t count, size_t* actual_count);
 
 /**
  * @brief Write data to an S3 stream.
@@ -167,7 +164,7 @@ US3_API us3_status_t us3_read(us3_handle_t handle,
  */
 US3_API us3_status_t us3_write(us3_handle_t handle,
                                const void* buf,
-                               const size_t count,
+                               size_t count,
                                size_t* actual_count);
 
 /**
