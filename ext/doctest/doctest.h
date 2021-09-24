@@ -517,7 +517,12 @@ DOCTEST_CLANG_SUPPRESS_WARNING("-Wc++98-compat-pedantic")
 
 // should probably take a look at https://github.com/scottt/debugbreak
 #ifdef DOCTEST_PLATFORM_MAC
-#define DOCTEST_BREAK_INTO_DEBUGGER() __asm__("int $3\n" : :)
+// Backport from Doctest 2.x to support ARM macos.
+#if defined(__x86_64) || defined(__x86_64__) || defined(__amd64__) || defined(__i386)
+#define DOCTEST_BREAK_INTO_DEBUGGER() __asm__("int $3\n" : :) // NOLINT (hicpp-no-assembler)
+#else
+#define DOCTEST_BREAK_INTO_DEBUGGER() __asm__("brk #0"); // NOLINT (hicpp-no-assembler)
+#endif
 #elif DOCTEST_MSVC
 #define DOCTEST_BREAK_INTO_DEBUGGER() __debugbreak()
 #elif defined(__MINGW32__)
