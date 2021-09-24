@@ -54,6 +54,15 @@ $ cmake -G Ninja ../
 $ ninja
 ```
 
+The following options may be passed to `cmake` (using `-DOPTION=VALUE`):
+
+| Option | Default | Description |
+|---|---|---|
+| `US3_ENABLE_TESTS` | ON | Enable unit tests |
+| `US3_ENABLE_TOOLS` | ON | Enable tools |
+| `US3_ENABLE_SYSTEM_CRYPTO` | OFF | Use system crypto libs when available |
+| `US3_BUILD_SHARED_LIBS` | [`BUILD_SHARED_LIBS`](https://cmake.org/cmake/help/latest/variable/BUILD_SHARED_LIBS.html) | Build shared libs instead of static libs |
+
 To install the library and the tools, do:
 
 ```bash

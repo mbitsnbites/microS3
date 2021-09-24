@@ -21,15 +21,15 @@ cmake_minimum_required(VERSION 3.4)
 project(microS3)
 
 # By default we build shared libs if the global BUILD_SHARED_LIBS flag is set.
-set(_us3_build_shared_libs_default off)
+set(_us3_build_shared_libs_default OFF)
 if(BUILD_SHARED_LIBS)
-  set(_us3_build_shared_libs_default on)
+  set(_us3_build_shared_libs_default ON)
 endif()
 
 # Build options for the microS3 project.
-option(US3_ENABLE_TESTS         "microS3: Enable unit tests" on)
-option(US3_ENABLE_TOOLS         "microS3: Enable tools" on)
-option(US3_ENABLE_SYSTEM_CRYPTO "microS3: Use system crypto libs when available" on)
+option(US3_ENABLE_TESTS         "microS3: Enable unit tests" ON)
+option(US3_ENABLE_TOOLS         "microS3: Enable tools" ON)
+option(US3_ENABLE_SYSTEM_CRYPTO "microS3: Use system crypto libs when available" OFF)
 option(US3_BUILD_SHARED_LIBS    "microS3: Build shared libs" ${_us3_build_shared_libs_default})
 
 if(US3_ENABLE_TESTS)
