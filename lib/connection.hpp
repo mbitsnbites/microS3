@@ -73,14 +73,14 @@ public:
    * @returns status_t::SUCCESS for success, otherwise an error code.
    */
   status_t open(const char* host_name,
-                const int port,
+                int port,
                 const char* path,
                 const char* access_key,
                 const char* secret_key,
-                const mode_t mode,
-                const size_t size,
-                const net::timeout_t connect_timeout,
-                const net::timeout_t socket_timeout);
+                mode_t mode,
+                size_t size,
+                net::timeout_t connect_timeout,
+                net::timeout_t socket_timeout);
 
   /**
    * @brief Close the connection.
@@ -95,7 +95,7 @@ public:
    * @returns the actual number of bytes read. The actual count may be less than @c count. If the
    * return value is zero, the end of the stream was reached.
    */
-  result_t<size_t> read(void* buf, const size_t count);
+  result_t<size_t> read(void* buf, size_t count);
 
   /**
    * @brief Write data to the stream.
@@ -103,7 +103,7 @@ public:
    * @param count The number of bytes to write.
    * @returns the actual number of bytes written. The actual count may be less than @c count.
    */
-  result_t<size_t> write(const void* buf, const size_t count);
+  result_t<size_t> write(const void* buf, size_t count);
 
   /**
    * @brief Get the status line from the HTTP response.
@@ -134,7 +134,7 @@ private:
                              const char* path,
                              const char* access_key,
                              const char* secret_key,
-                             const size_t size);
+                             size_t size);
   status_t read_data_to_buffer();
   status_t read_http_response();
 

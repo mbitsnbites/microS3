@@ -71,11 +71,7 @@ std::string get_date_rfc2616_gmt() {
 }
 
 std::string mode_to_http_method(const connection_t::mode_t mode) {
-  if (mode == connection_t::WRITE) {
-    return "PUT";
-  } else {
-    return "GET";
-  }
+  return (mode == connection_t::WRITE) ? "PUT" : "GET";
 }
 
 status_t send_string(net::socket_t socket, const std::string& str) {
@@ -135,13 +131,15 @@ header_field_t parse_header_field(const std::string& line) {
   std::string value;
   {
     size_t start_pos;
-    for (start_pos = colon_pos + 1; start_pos < line.size() && std::isspace(line[start_pos]);
-         ++start_pos)
-      ;
+    for (start_pos = colon_pos + 1;
+         (start_pos < line.size()) && (std::isspace(line[start_pos]) != 0);
+         ++start_pos) {
+    }
     if (start_pos < line.size()) {
       size_t end_pos;
-      for (end_pos = line.size() - 1; end_pos > start_pos && std::isspace(line[end_pos]); --end_pos)
-        ;
+      for (end_pos = line.size() - 1; (end_pos > start_pos) && (std::isspace(line[end_pos]) != 0);
+           --end_pos) {
+      }
       value = line.substr(start_pos, end_pos - start_pos + 1);
     }
   }
@@ -418,13 +416,13 @@ status_t connection_t::read_http_response() {
     while (m_buffer_size > 0) {
       // Extract a new string from the buffer.
       const bool has_cr =
-          (incomplete_line.size() > 0 && incomplete_line[incomplete_line.size() - 1] == '\r');
+          (!incomplete_line.empty() && incomplete_line[incomplete_line.size() - 1] == '\r');
       std::string line = extract_line(&m_buffer[m_buffer_pos], m_buffer_size, has_cr);
       m_buffer_pos += line.size();
       m_buffer_size -= line.size();
 
       // Prepend a previous incomplete line (if any).
-      line = incomplete_line + line;
+      line += incomplete_line;
 
       // Final blank line that terminates the HTTP response?
       if (line == "\r\n") {
@@ -438,9 +436,8 @@ status_t connection_t::read_http_response() {
           (line.size() < 2 || (line[line.size() - 2] != '\r' || line[line.size() - 1] != '\n'))) {
         incomplete_line = line;
         break;
-      } else {
-        incomplete_line = "";
       }
+      incomplete_line = "";
 
       // Sanity check.
       if (line.size() < 2) {
@@ -492,14 +489,15 @@ status_t connection_t::read_http_response() {
   const int status_code = (static_cast<int>(m_status_line[9] - '0') * 100) +
                           (static_cast<int>(m_status_line[10] - '0') * 10) +
                           static_cast<int>(m_status_line[11] - '0');
-  if (status_code == 200) {
-    return make_result(status_t::SUCCESS);
-  } else if (status_code == 403) {
-    return make_result(status_t::FORBIDDEN);
-  } else if (status_code == 404) {
-    return make_result(status_t::NOT_FOUND);
-  } else {
-    return make_result(status_t::ERROR);
+  switch (status_code) {
+    case 200:
+      return make_result(status_t::SUCCESS);
+    case 403:
+      return make_result(status_t::FORBIDDEN);
+    case 404:
+      return make_result(status_t::NOT_FOUND);
+    default:
+      return make_result(status_t::ERROR);
   }
 }
 

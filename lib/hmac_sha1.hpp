@@ -39,7 +39,8 @@ public:
 
     // Loop over all input bytes and emit encoded bytes.
     unsigned long v = 0;
-    int i = 0, j = 0;
+    int i = 0;
+    int j = 0;
     for (; i < 20; ++i) {
       v = (v << 8) | static_cast<unsigned long>(raw_digest[i]);
 

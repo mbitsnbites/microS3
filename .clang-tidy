@@ -1,0 +1,12 @@
+---
+Checks: "\
+clang-diagnostic-*,\
+clang-analyzer-*,\
+performance-*,\
+readability-*,\
+-readability-magic-numbers"
+WarningsAsErrors: "*"
+
+FormatStyle: file
+HeaderFilterRegex: '(lib|include/us3)/.*'
+---

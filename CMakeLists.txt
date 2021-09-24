@@ -20,6 +20,9 @@
 cmake_minimum_required(VERSION 3.4)
 project(microS3)
 
+# Create a compilation command database (for LLVM-based linting etc).
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # By default we build shared libs if the global BUILD_SHARED_LIBS flag is set.
 set(_us3_build_shared_libs_default OFF)
 if(BUILD_SHARED_LIBS)

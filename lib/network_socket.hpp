@@ -35,18 +35,18 @@ typedef long timeout_t;
 
 /// @brief Establish a socket connection.
 result_t<socket_t> connect(const char* host,
-                           const int port,
-                           const timeout_t connect_timeout,
-                           const timeout_t socket_timeout);
+                           int port,
+                           timeout_t connect_timeout,
+                           timeout_t socket_timeout);
 
 /// @brief Close a socket connection.
 status_t disconnect(socket_t socket);
 
 /// @brief Send data over a socket.
-result_t<size_t> send(socket_t socket, const void* buf, const size_t count);
+result_t<size_t> send(socket_t socket, const void* buf, size_t count);
 
 /// @brief Receive data over a socket.
-result_t<size_t> recv(socket_t socket, void* buf, const size_t count);
+result_t<size_t> recv(socket_t socket, void* buf, size_t count);
 
 }  // namespace net
 }  // namespace us3
