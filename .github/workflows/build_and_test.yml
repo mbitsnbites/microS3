@@ -1,0 +1,152 @@
+name: Build and Test
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - v*
+  pull_request:
+  workflow_dispatch:
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  build:
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+        - {
+            name: "Ubuntu 20.04 GCC",
+            os: ubuntu-20.04,
+            cc: "gcc",
+            cxx: "g++"
+          }
+        - {
+            name: "macOS Latest Clang",
+            os: macos-latest,
+            cc: "clang",
+            cxx: "clang++"
+          }
+        - {
+            name: "Windows Latest MSVC",
+            os: windows-latest,
+            cc: "cl",
+            cxx: "cl",
+            environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
+          }
+        - {
+            name: "Linux/MinGW (cross-compile for Windows)",
+            os: ubuntu-20.04,
+            cc: "x86_64-w64-mingw32-gcc",
+            cxx: "x86_64-w64-mingw32-g++",
+            extra_cmake_flags: "-DCMAKE_BUILD_WITH_INSTALL_RPATH=on",
+            cross_compile: true
+          }
+
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Setup CMake and Ninja
+      uses: lukka/get-cmake@latest
+
+    - name: Setup Clang tools
+      if: ${{ runner.os == 'Linux' }}
+      run: |
+        sudo apt update
+        sudo apt install -y clang-tidy clang-format
+
+    - name: Setup MinGW
+      if: ${{ runner.os == 'Linux' && contains(matrix.config.cxx, 'mingw') }}
+      run: |
+        sudo apt update
+        sudo apt install -y mingw-w64
+
+    - name: Configure
+      shell: cmake -P {0}
+      run: |
+        set(ENV{CC} ${{ matrix.config.cc }})
+        set(ENV{CXX} ${{ matrix.config.cxx }})
+
+        # Capture environment variables (preserve the effect of MSVC vcvars.bat).
+        if ("${{ runner.os }}" STREQUAL "Windows" AND NOT "x${{ matrix.config.environment_script }}" STREQUAL "x")
+          execute_process(
+            COMMAND "${{ matrix.config.environment_script }}" && set
+            OUTPUT_FILE environment_script_output.txt
+          )
+          file(STRINGS environment_script_output.txt output_lines)
+          foreach(line IN LISTS output_lines)
+            if (line MATCHES "^([a-zA-Z0-9_-]+)=(.*)$")
+              set(ENV{${CMAKE_MATCH_1}} "${CMAKE_MATCH_2}")
+            endif()
+          endforeach()
+        endif()
+
+        # Build universal binaries on macOS.
+        if ("${{ runner.os }}" STREQUAL "macOS")
+          set(ENV{CMAKE_OSX_ARCHITECTURES} "x86_64;arm64")
+        endif()
+
+        execute_process(
+          COMMAND cmake
+            -S .
+            -B build
+            -DCMAKE_BUILD_TYPE=$ENV{BUILD_TYPE}
+            -G Ninja
+            ${{ matrix.config.extra_cmake_flags }}
+          RESULT_VARIABLE result
+        )
+        if (NOT result EQUAL 0)
+          message(FATAL_ERROR "Bad exit status")
+        endif()
+
+    - name: Build
+      shell: cmake -P {0}
+      run: |
+        set(ENV{NINJA_STATUS} "[%f/%t %o/sec] ")
+
+        # Resture environment variables (apply the effect of MSVC vcvars.bat).
+        if ("${{ runner.os }}" STREQUAL "Windows" AND NOT "x${{ matrix.config.environment_script }}" STREQUAL "x")
+          file(STRINGS environment_script_output.txt output_lines)
+          foreach(line IN LISTS output_lines)
+            if (line MATCHES "^([a-zA-Z0-9_-]+)=(.*)$")
+              set(ENV{${CMAKE_MATCH_1}} "${CMAKE_MATCH_2}")
+            endif()
+          endforeach()
+        endif()
+
+        execute_process(
+          COMMAND cmake --build build
+          RESULT_VARIABLE result
+        )
+        if (NOT result EQUAL 0)
+          message(FATAL_ERROR "Bad exit status")
+        endif()
+
+    - name: Run unit tests
+      if: ${{ !matrix.config.cross_compile }}
+      shell: cmake -P {0}
+      run: |
+        include(ProcessorCount)
+        ProcessorCount(N)
+
+        set(ENV{CTEST_OUTPUT_ON_FAILURE} "ON")
+
+        execute_process(
+          COMMAND ctest -j ${N}
+          WORKING_DIRECTORY build
+          RESULT_VARIABLE result
+        )
+        if (NOT result EQUAL 0)
+          message(FATAL_ERROR "Running tests failed!")
+        endif()
+
+    - name: Run static checks
+      # TODO(m): We want to run linting for MinGW too, but we currently get
+      # unrelated errors in /usr/x86_64-w64-mingw32/include/stdlib.h.
+      if: ${{ runner.os == 'Linux' && !contains(matrix.config.cxx, 'mingw') }}
+      run: scripts/run_linters.sh build

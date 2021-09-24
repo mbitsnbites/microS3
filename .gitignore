@@ -1,6 +1,6 @@
 # Ignore build folders
-build*
-out*
+/build*
+/out*
 
 # QtCreator generates this file
 CMakeLists.txt.user

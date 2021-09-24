@@ -1,4 +1,4 @@
-# microS3 [![Build Status](https://travis-ci.org/mbitsnbites/microS3.svg?branch=master)](https://travis-ci.org/mbitsnbites/microS3)
+# microS3 [![Build Status](https://github.com/mbitsnbites/microS3/workflows/Build%20and%20Test/badge.svg)](https://github.com/mbitsnbites/microS3/actions)
 
 * [About](#about)
   * [Architecture](#architecture)
