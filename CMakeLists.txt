@@ -46,8 +46,8 @@ if(MINGW)
 endif()
 
 if(MSVC)
-  # Avoid CRT secure warnings when using MSVC.
-  add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+  # Avoid CRT and SCL secure warnings when using MSVC.
+  add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_SCL_SECURE_NO_WARNINGS)
 endif()
 
 # We build everything against the C++03 standard (since CMake does not support 3 as a standard, we
