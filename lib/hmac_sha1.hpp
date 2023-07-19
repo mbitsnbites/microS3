@@ -30,6 +30,10 @@ public:
   // The raw HMAC-SHA1 digest size is 20 bytes.
   static const int HMAC_SHA1_RAW_SIZE = 20;
 
+  /// @brief Construct an empty digest.
+  hmac_sha1_t() : m_digest() {
+  }
+
   /// @brief Construct a base64 encoded digest from a raw digest.
   /// @param raw_digest The raw digest buffer.
   /// @note This implementation is hardcoded for converting 20 raw bytes to 28 base64 chars.

@@ -44,7 +44,12 @@ void set_uint32_be(const uint32_t x, unsigned char* ptr) {
 
 // Calculate the SHA1 hash for a message.
 // Based on pseudocode from Wikipedia: https://en.wikipedia.org/wiki/SHA-1#SHA-1_pseudocode
-void sha1(const unsigned char* msg, size_t msg_size, unsigned char (&hash)[20]) {
+bool sha1(const unsigned char* msg, size_t msg_size, unsigned char (&hash)[20]) {
+  // Precondition to avoid potential arithmetic overflows.
+  if (msg_size > (SIZE_MAX / 16U)) {
+    return false;
+  }
+
   // The original message size, in bits.
   const uint64_t original_size_bits = static_cast<uint64_t>(msg_size) * 8U;
 
@@ -144,15 +149,19 @@ void sha1(const unsigned char* msg, size_t msg_size, unsigned char (&hash)[20]) 
   set_uint32_be(h2, &hash[8]);
   set_uint32_be(h3, &hash[12]);
   set_uint32_be(h4, &hash[16]);
+
+  return true;
 }
 
-void prepare_hmac_sha1_key(const char* key, unsigned char (&key_pad)[64]) {
+bool prepare_hmac_sha1_key(const char* key, unsigned char (&key_pad)[64]) {
   size_t key_len = std::strlen(key);
 
   if (key_len > 64U) {
     // Keys longer than 64 characters are shortened by hashing them (it becomes 20 bytes long).
     unsigned char hash[20];
-    sha1(reinterpret_cast<const unsigned char*>(key), key_len, hash);
+    if (!sha1(reinterpret_cast<const unsigned char*>(key), key_len, hash)) {
+      return false;
+    }
     std::memcpy(&key_pad[0], &hash[0], 20);
     key_len = 20;
   } else {
@@ -163,6 +172,8 @@ void prepare_hmac_sha1_key(const char* key, unsigned char (&key_pad)[64]) {
   if (key_len < 64) {
     std::memset(&key_pad[key_len], 0, 64 - key_len);
   }
+
+  return true;
 }
 
 }  // namespace
@@ -171,7 +182,9 @@ void prepare_hmac_sha1_key(const char* key, unsigned char (&key_pad)[64]) {
 result_t<hmac_sha1_t> hmac_sha1(const char* key, const char* data) {
   // Prepare the key (make it exactly 64 characters long).
   unsigned char key_pad[64];
-  prepare_hmac_sha1_key(key, key_pad);
+  if (!prepare_hmac_sha1_key(key, key_pad)) {
+    return make_result(hmac_sha1_t(), status_t::ERROR);
+  }
 
   // Outer and innder keys, padded.
   unsigned char outer_key_pad[64];
@@ -191,7 +204,9 @@ result_t<hmac_sha1_t> hmac_sha1(const char* key, const char* data) {
     std::memcpy(&msg[sizeof(inner_key_pad)], &data[0], data_len);
 
     // Calculate the inner hash.
-    sha1(&msg[0], msg.size(), inner_hash);
+    if (!sha1(&msg[0], msg.size(), inner_hash)) {
+      return make_result(hmac_sha1_t(), status_t::ERROR);
+    }
   }
 
   // Outer hash (i.e. the result)
@@ -203,7 +218,9 @@ result_t<hmac_sha1_t> hmac_sha1(const char* key, const char* data) {
     std::memcpy(&msg[sizeof(outer_key_pad)], &inner_hash[0], sizeof(inner_hash));
 
     // Calculate the outer hash.
-    sha1(&msg[0], msg.size(), outer_hash);
+    if (!sha1(&msg[0], msg.size(), outer_hash)) {
+      return make_result(hmac_sha1_t(), status_t::ERROR);
+    }
   }
 
   return make_result(hmac_sha1_t(outer_hash));
