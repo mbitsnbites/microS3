@@ -35,7 +35,7 @@ c="$(command -v clang-tidy)"
 if [ -n "$c" ]; then
   echo "Running $c"
   # Collect all the C/C++ source files from the compileation database.
-  SRC_FILES=$(grep '"file":' "${BUILD_DIR}/compile_commands.json" | grep -v 'ext/' | sed 's| \+"file": \+||g' | sed 's|"||g')
+  SRC_FILES=$(grep '"file":' "${BUILD_DIR}/compile_commands.json" | grep -v 'ext/' | sed 's| \+"file": \+||g' | sed 's|",\?||g')
   # shellcheck disable=SC2086
   "$c" --quiet -p "${BUILD_DIR}" ${SRC_FILES} 2>/dev/null || exit 1
 else
