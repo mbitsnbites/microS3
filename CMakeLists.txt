@@ -20,6 +20,12 @@
 cmake_minimum_required(VERSION 3.4)
 project(microS3)
 
+# Workaround for CMake not always detecting mingw.
+if((NOT MINGW) AND CMAKE_CXX_COMPILER MATCHES mingw)
+  message("Note: We're actually using a MinGW compiler: ${CMAKE_CXX_COMPILER}")
+  set(MINGW true)
+endif()
+
 # Create a compilation command database (for LLVM-based linting etc).
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
