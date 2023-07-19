@@ -76,7 +76,7 @@ result_t<socket_t> connect(const char* host,
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
     char port_str[30];
-    std::sprintf(&port_str[0], "%d", port);
+    std::snprintf(&port_str[0], sizeof(port_str), "%d", port);
     if (::getaddrinfo(host, port_str, &hints, &info) != 0) {
       return make_result(NULL_SOCKET_T, status_t::NO_HOST);
     }
