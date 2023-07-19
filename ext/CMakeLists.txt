@@ -24,4 +24,11 @@ if(US3_ENABLE_TESTS)
               doctest/doctest_main.cpp
               doctest/doctest.h)
   target_include_directories(doctest PUBLIC doctest)
+
+  # Inhibit compiler warnings in 3rd party code.
+  if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    target_compile_options(doctest PRIVATE -w)
+  elseif(MSVC)
+    target_compile_options(doctest PRIVATE /w)
+  endif()
 endif()
